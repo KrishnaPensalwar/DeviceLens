@@ -11,6 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.example.devicelens.presentation.device.DeviceInfoScreen
+import com.example.devicelens.presentation.navigation.DeviceLensNavHost
 import com.example.devicelens.ui.theme.DeviceLensTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,28 +23,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             DeviceLensTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    DeviceLensApp()
                 }
             }
         }
     }
 }
-
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+private fun DeviceLensApp() {
+
+    val navController = rememberNavController()
+
+    DeviceLensNavHost(
+        navController = navController
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    DeviceLensTheme {
-        Greeting("Android")
-    }
 }
