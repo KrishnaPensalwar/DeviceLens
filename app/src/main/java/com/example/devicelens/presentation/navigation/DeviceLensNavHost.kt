@@ -34,9 +34,7 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Device.route
         ) {
-            DeviceInfoScreen(
-                viewModel = viewModel<DeviceInfoViewModel>()
-            )
+            DeviceInfoScreen()
         }
     }
 }

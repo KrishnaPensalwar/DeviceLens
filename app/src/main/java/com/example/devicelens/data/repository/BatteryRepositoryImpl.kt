@@ -8,7 +8,7 @@ class BatteryRepositoryImpl(
     private val batteryManagerProvider: BatteryManagerProvider
 ) : BatteryRepository{
     override fun getBatteryInfo(): BatteryInfo {
-        batteryManagerProvider.getBatteryInfo()
+        return batteryManagerProvider.getBatteryInfo()
     }
 
 }

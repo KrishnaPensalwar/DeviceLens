@@ -2,8 +2,9 @@ package com.example.devicelens.data.system
 
 import android.os.Build
 import com.example.devicelens.domain.model.DeviceInfo
+import javax.inject.Inject
 
-class DeviceInfoProvider{
+class DeviceInfoProvider @Inject constructor() {
 
     fun getDeviceInfo() : DeviceInfo{
         return DeviceInfo(
