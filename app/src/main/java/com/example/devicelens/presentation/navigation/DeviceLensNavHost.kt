@@ -8,6 +8,7 @@ import com.example.devicelens.presentation.dashboard.DashboardScreen
 import com.example.devicelens.presentation.device.DeviceInfoScreen
 import com.example.devicelens.presentation.device.DeviceInfoViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.devicelens.presentation.battery.BatteryScreen
 
 @Composable
 fun DeviceLensNavHost(
@@ -21,17 +22,27 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Dashboard.route
         ) {
-            DashboardScreen(){
-                navController.navigate( Routes.Device.route)
-            }
+            DashboardScreen(
+                onDeviceInfoClick = {
+                    navController.navigate(Routes.Device.route)
+                },
+                onAppsClick = {
+                    navController.navigate(Routes.Battery.route)
+
+                }
+            )
         }
 
         composable(
             route = Routes.Device.route
         ) {
-            DeviceInfoScreen(
-                viewModel = viewModel<DeviceInfoViewModel>()
-            )
+            DeviceInfoScreen()
+        }
+
+        composable(
+            route = Routes.Battery.route
+        ) {
+            BatteryScreen()
         }
     }
 }

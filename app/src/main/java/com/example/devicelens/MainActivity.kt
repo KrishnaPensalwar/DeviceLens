@@ -15,7 +15,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.devicelens.presentation.device.DeviceInfoScreen
 import com.example.devicelens.presentation.navigation.DeviceLensNavHost
 import com.example.devicelens.ui.theme.DeviceLensTheme
+import dagger.hilt.EntryPoint
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

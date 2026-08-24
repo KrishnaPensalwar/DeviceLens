@@ -13,10 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.devicelens.domain.model.DeviceInfo
-
+import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun DeviceInfoScreen(
-    viewModel: DeviceInfoViewModel
+    viewModel: DeviceInfoViewModel = hiltViewModel()
 ) {
     val data by viewModel.uiState.collectAsStateWithLifecycle()
 

@@ -2,11 +2,13 @@ package com.example.devicelens.domain.usecase.device
 
 import com.example.devicelens.domain.model.DeviceInfo
 import com.example.devicelens.domain.repository.DeviceRepository
+import javax.inject.Inject
 
-class GetDeviceInfoUseCase (
+class GetDeviceInfoUseCase @Inject constructor(
     private val repository: DeviceRepository
-){
-    fun invoke() : DeviceInfo{
+) {
+
+    operator fun invoke(): DeviceInfo {
         return repository.getDeviceInfo()
     }
 }
