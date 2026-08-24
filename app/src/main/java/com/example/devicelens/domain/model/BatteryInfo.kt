@@ -9,7 +9,8 @@ data class BatteryInfo(
     val voltage: Int?,
     val technology: String?,
     val health: BatteryHealth,
-    val isBatterySaverEnabled: Boolean
+    val isBatterySaverEnabled: Boolean,
+    val capacity: Int?
 )
 
 enum class ChargingType{

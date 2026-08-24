@@ -4,16 +4,20 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import android.os.Build
 import android.os.PowerManager
 import com.example.devicelens.domain.model.BatteryHealth
 import com.example.devicelens.domain.model.BatteryInfo
 import com.example.devicelens.domain.model.BatteryStatus
 import com.example.devicelens.domain.model.ChargingType
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.lang.reflect.Constructor
+import javax.inject.Inject
 import kotlin.jvm.Throws
 
-class BatteryManagerProvider(
-    private val context: Context
-) {
+class BatteryManagerProvider @Inject constructor(
+   @ApplicationContext private val context: Context
+)  {
 
     private val batteryManager =
         context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
@@ -137,7 +141,8 @@ class BatteryManagerProvider(
             voltage = voltage,
             technology = technology,
             health = batteryHealth,
-            isBatterySaverEnabled = isBatterySaverEnabled
+            isBatterySaverEnabled = isBatterySaverEnabled,
+            capacity = getBatteryCapacity()
         )
 
 
@@ -150,4 +155,33 @@ class BatteryManagerProvider(
         ) ?: throw IllegalStateException("Unable to get battery information")
     }
 
+    private fun getBatteryCapacity(): Int? {
+        return try {
+            val powerProfileClass =
+                Class.forName("com.android.internal.os.PowerProfile")
+
+            val constructor =
+                powerProfileClass.getConstructor(Context::class.java)
+
+            val powerProfile =
+                constructor.newInstance(context)
+
+            val method =
+                powerProfileClass.getMethod(
+                    "getAveragePower",
+                    String::class.java
+                )
+
+            val capacity =
+                method.invoke(
+                    powerProfile,
+                    "battery.capacity"
+                ) as Double
+
+            capacity.toInt()
+
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
