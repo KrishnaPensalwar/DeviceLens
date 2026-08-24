@@ -21,9 +21,14 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Dashboard.route
         ) {
-            DashboardScreen(){
-                navController.navigate( Routes.Device.route)
-            }
+            DashboardScreen(
+                onDeviceInfoClick = {
+                    navController.navigate(Routes.Device.route)
+                },
+                onAppsClick = {
+
+                }
+            )
         }
 
         composable(
