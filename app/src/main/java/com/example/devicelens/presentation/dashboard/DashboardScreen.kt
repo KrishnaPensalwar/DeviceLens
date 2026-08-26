@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 fun DashboardScreen(
     onDeviceInfoClick: () -> Unit,
     onAppsClick: () -> Unit,
+    onNetworkClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center,
@@ -28,9 +29,15 @@ fun DashboardScreen(
         }
         Spacer(Modifier.height(10.dp))
         Button(
-            onAppsClick
+            onClick = onAppsClick
         ) {
             Text("Apps")
+        }
+        Spacer(Modifier.height(10.dp))
+        Button(
+            onClick = onNetworkClick
+        ) {
+            Text("Network")
         }
     }
 

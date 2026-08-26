@@ -4,10 +4,10 @@ import com.example.devicelens.domain.model.NetworkInfo
 import com.example.devicelens.domain.repository.NetworkRepository
 import javax.inject.Inject
 
-class GetNetworkInfoUseCase @Inject constructor(
+class RunNetworkTestUseCase @Inject constructor(
     private val networkRepository: NetworkRepository
 ) {
     suspend fun invoke(): NetworkInfo {
-        return networkRepository.getNetworkInfo()
+        return networkRepository.runNetworkTest()
     }
 }
