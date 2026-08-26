@@ -30,7 +30,7 @@ class NetworkViewModel @Inject constructor(
                 it.copy(isLoading = true, error = null)
             }
             try {
-                val info = getNetworkInfoUseCase.invoke()
+                val info = runNetworkTestUseCase.invoke()
                 _uiState.update {
                     it.copy(
                         isLoading = false,
