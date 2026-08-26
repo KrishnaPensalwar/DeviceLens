@@ -18,6 +18,7 @@ fun DashboardScreen(
     onAppsClick: () -> Unit,
     onNetworkClick: () -> Unit,
     onStorageClick: () -> Unit,
+    onHealthClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center,
@@ -32,7 +33,7 @@ fun DashboardScreen(
         Button(
             onClick = onAppsClick
         ) {
-            Text("Apps")
+            Text("Battery")
         }
         Spacer(Modifier.height(10.dp))
         Button(
@@ -45,6 +46,12 @@ fun DashboardScreen(
             onClick = onStorageClick
         ) {
             Text("Storage")
+        }
+        Spacer(Modifier.height(10.dp))
+        Button(
+            onClick = onHealthClick
+        ) {
+            Text("Health")
         }
     }
 

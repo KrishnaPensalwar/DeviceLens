@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.devicelens.presentation.battery.BatteryScreen
 import com.example.devicelens.presentation.network.NetworkScreen
 import com.example.devicelens.presentation.storage.StorageScreen
+import com.example.devicelens.presentation.health.HealthScreen
 
 @Composable
 fun DeviceLensNavHost(
@@ -36,6 +37,9 @@ fun DeviceLensNavHost(
                 },
                 onStorageClick = {
                     navController.navigate(Routes.Storage.route)
+                },
+                onHealthClick = {
+                    navController.navigate(Routes.Health.route)
                 }
             )
         }
@@ -62,6 +66,12 @@ fun DeviceLensNavHost(
             route = Routes.Storage.route
         ) {
             StorageScreen()
+        }
+
+        composable(
+            route = Routes.Health.route
+        ) {
+            HealthScreen()
         }
     }
 }
