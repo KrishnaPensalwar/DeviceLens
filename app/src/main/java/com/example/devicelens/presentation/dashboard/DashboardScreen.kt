@@ -19,6 +19,7 @@ fun DashboardScreen(
     onNetworkClick: () -> Unit,
     onStorageClick: () -> Unit,
     onHealthClick: () -> Unit,
+    onUsageClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center,
@@ -52,6 +53,12 @@ fun DashboardScreen(
             onClick = onHealthClick
         ) {
             Text("Health")
+        }
+        Spacer(Modifier.height(10.dp))
+        Button(
+            onClick = onUsageClick
+        ) {
+            Text("App Usage")
         }
     }
 

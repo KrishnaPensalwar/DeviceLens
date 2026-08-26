@@ -13,3 +13,7 @@ sealed class Routes(
     data object Device : Routes("device")
     data object Health : Routes("health")
 }
+
+fun usageDetailRoute(packageName: String): String {
+    return "usage/${android.net.Uri.encode(packageName)}"
+}

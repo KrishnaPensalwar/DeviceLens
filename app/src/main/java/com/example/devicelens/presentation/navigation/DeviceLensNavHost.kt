@@ -2,16 +2,18 @@ package com.example.devicelens.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.devicelens.presentation.dashboard.DashboardScreen
 import com.example.devicelens.presentation.device.DeviceInfoScreen
-import com.example.devicelens.presentation.device.DeviceInfoViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.devicelens.presentation.battery.BatteryScreen
 import com.example.devicelens.presentation.network.NetworkScreen
 import com.example.devicelens.presentation.storage.StorageScreen
 import com.example.devicelens.presentation.health.HealthScreen
+import com.example.devicelens.presentation.usage.UsageDetailScreen
+import com.example.devicelens.presentation.usage.UsageScreen
 
 @Composable
 fun DeviceLensNavHost(
@@ -40,6 +42,9 @@ fun DeviceLensNavHost(
                 },
                 onHealthClick = {
                     navController.navigate(Routes.Health.route)
+                },
+                onUsageClick = {
+                    navController.navigate(Routes.Usage.route)
                 }
             )
         }
@@ -72,6 +77,25 @@ fun DeviceLensNavHost(
             route = Routes.Health.route
         ) {
             HealthScreen()
+        }
+
+        composable(
+            route = Routes.Usage.route
+        ) {
+            UsageScreen(
+                onAppClick = { packageName ->
+                    navController.navigate(usageDetailRoute(packageName))
+                }
+            )
+        }
+
+        composable(
+            route = "usage/{packageName}",
+            arguments = listOf(
+                navArgument("packageName") { type = NavType.StringType }
+            )
+        ) {
+            UsageDetailScreen()
         }
     }
 }
