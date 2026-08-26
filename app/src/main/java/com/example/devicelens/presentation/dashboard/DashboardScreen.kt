@@ -17,6 +17,7 @@ fun DashboardScreen(
     onDeviceInfoClick: () -> Unit,
     onAppsClick: () -> Unit,
     onNetworkClick: () -> Unit,
+    onStorageClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center,
@@ -38,6 +39,12 @@ fun DashboardScreen(
             onClick = onNetworkClick
         ) {
             Text("Network")
+        }
+        Spacer(Modifier.height(10.dp))
+        Button(
+            onClick = onStorageClick
+        ) {
+            Text("Storage")
         }
     }
 
