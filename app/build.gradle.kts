@@ -71,4 +71,6 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    implementation("io.github.san-ki:glassify-compose:0.1.0")
 }
