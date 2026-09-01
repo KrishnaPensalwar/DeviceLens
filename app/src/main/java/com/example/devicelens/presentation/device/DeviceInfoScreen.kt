@@ -1,6 +1,8 @@
 package com.example.devicelens.presentation.device
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,54 +13,90 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.BatteryStd
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.Memory
-import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Sensors
-import androidx.compose.material.icons.outlined.Smartphone
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.devicelens.core.util.FileSizeFormatter
 import com.example.devicelens.domain.model.BatteryStatus
 import com.example.devicelens.domain.model.DeviceInfo
-import com.example.devicelens.domain.model.DeviceType
-import io.github.sanketnawghare.glassify.compose.GlassButton
-import io.github.sanketnawghare.glassify.compose.GlassStyle
-import io.github.sanketnawghare.glassify.compose.glassify
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+
+// ================================================================
+// COLORS
+// ================================================================
+
+private val OuterBackground = Color(0xFF202124)
+
+private val PanelBackground = Color(0xFF0D1110)
+
+private val CardBackground = Color(0xFF1A1F1E)
+
+private val CardBorder = Color(0xFF2A302E)
+
+private val DividerColor = Color(0xFF252B29)
+
+private val TextPrimary = Color(0xFFE4E9E7)
+
+private val TextSecondary = Color(0xFFB4BEBA)
+
+private val TextMuted = Color(0xFF737D79)
+
+private val Cyan = Color(0xFF6BD8D4)
+
+private val Orange = Color(0xFFFFA27D)
+
+private val Blue = Color(0xFFA9B7FF)
+
+private val Green = Color(0xFF00C58A)
+
+
+// ================================================================
+// MAIN SCREEN
+// ================================================================
 
 @Composable
 fun DeviceInfoScreen(
     viewModel: DeviceInfoViewModel = hiltViewModel()
 ) {
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     when {
+
         uiState.isLoading -> {
             DeviceInfoLoading()
         }
@@ -87,88 +125,213 @@ fun DeviceInfoScreen(
 private fun DeviceInfoContent(
     deviceInfo: DeviceInfo?
 ) {
+
     if (deviceInfo == null) return
 
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-
-        contentPadding = PaddingValues(
-            start = 20.dp,
-            end = 20.dp,
-            top = 24.dp,
-            bottom = 32.dp
-        ),
-
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+            .background(OuterBackground)
     ) {
 
-        // Header
-        item {
-            DeviceInfoHeader()
-        }
 
-        // Device
-        item {
-            DeviceIdentityCard(deviceInfo)
-        }
+        // ---------------------------------------------------------
+        // DEVICE LENS PANEL
+        // ---------------------------------------------------------
 
-        // Android
-        item {
-            AndroidCard(deviceInfo)
-        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(
+                    RoundedCornerShape(
+                        topStart = 14.dp,
+                        topEnd = 14.dp
+                    )
+                )
+                .background(PanelBackground)
+                .border(
+                    width = 1.dp,
+                    color = CardBorder,
+                    shape = RoundedCornerShape(
+                        topStart = 14.dp,
+                        topEnd = 14.dp
+                    )
+                ),
+            contentAlignment = Alignment.BottomCenter
+        ) {
 
-        // Memory
-        item {
-            MemoryCard(deviceInfo)
-        }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
 
-        // Storage
-        item {
-            StorageCard(deviceInfo)
-        }
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 0.dp,
+                    bottom = 90.dp
+                ),
 
-        // Display
-        item {
-            DisplayCard(deviceInfo)
-        }
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
 
-        // Battery
-        item {
-            BatteryCard(deviceInfo)
-        }
+                // -------------------------------------------------
+                // HEADER
+                // -------------------------------------------------
 
-        // Sensors
-        item {
-            SensorsCard(deviceInfo)
+                item {
+                    DeviceInfoTopBar()
+                }
+
+                // -------------------------------------------------
+                // DEVICE
+                // -------------------------------------------------
+
+                item {
+                    DeviceCard(
+                        deviceInfo = deviceInfo
+                    )
+                }
+
+                // -------------------------------------------------
+                // SYSTEM
+                // -------------------------------------------------
+
+                item {
+                    SystemCard(
+                        deviceInfo = deviceInfo
+                    )
+                }
+
+                // -------------------------------------------------
+                // DISPLAY
+                // -------------------------------------------------
+
+                item {
+                    DisplayCard(
+                        deviceInfo = deviceInfo
+                    )
+                }
+
+                // -------------------------------------------------
+                // MEMORY & STORAGE
+                // -------------------------------------------------
+
+                item {
+                    MemoryStorageCard(
+                        deviceInfo = deviceInfo
+                    )
+                }
+
+                // -------------------------------------------------
+                // CAMERA
+                // -------------------------------------------------
+
+                item {
+                    CameraCard()
+                }
+
+                // -------------------------------------------------
+                // BATTERY
+                // -------------------------------------------------
+
+                item {
+                    BatteryCard(
+                        deviceInfo = deviceInfo
+                    )
+                }
+
+                // -------------------------------------------------
+                // SENSORS
+                // -------------------------------------------------
+
+                item {
+                    SensorsCard(
+                        deviceInfo = deviceInfo
+                    )
+                }
+            }
+
+            // -----------------------------------------------------
+            // BOTTOM NAV
+            // -----------------------------------------------------
+
+            DeviceBottomNavigation()
         }
     }
 }
 
 
 // ================================================================
-// HEADER
+// DOTTED BACKGROUND
 // ================================================================
 
 @Composable
-private fun DeviceInfoHeader() {
+private fun DottedBackground() {
 
-    Column {
+    Canvas(
+        modifier = Modifier.fillMaxSize()
+    ) {
+
+        val spacing = 16.dp.toPx()
+        val radius = 1.dp.toPx()
+
+        var x = 0f
+
+        while (x <= size.width) {
+
+            var y = 0f
+
+            while (y <= size.height) {
+
+                drawCircle(
+                    color = Color(0xFF6B7072).copy(alpha = 0.45f),
+                    radius = radius,
+                    center = Offset(x, y)
+                )
+
+                y += spacing
+            }
+
+            x += spacing
+        }
+    }
+}
+
+
+// ================================================================
+// TOP BAR
+// ================================================================
+
+@Composable
+private fun DeviceInfoTopBar() {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(65.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Icon(
+            imageVector = Icons.Outlined.ArrowBack,
+            contentDescription = "Back",
+            tint = Cyan,
+            modifier = Modifier.size(24.dp)
+        )
 
         Text(
             text = "Device Info",
-            style = MaterialTheme.typography.headlineMedium,
+            color = Cyan,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            modifier = Modifier.weight(1f),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "Everything you need to know about your device",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        Icon(
+            imageVector = Icons.Outlined.Settings,
+            contentDescription = "Settings",
+            tint = TextSecondary,
+            modifier = Modifier.size(24.dp)
         )
     }
 }
@@ -179,212 +342,133 @@ private fun DeviceInfoHeader() {
 // ================================================================
 
 @Composable
-private fun DeviceIdentityCard(
+private fun DeviceCard(
     deviceInfo: DeviceInfo
 ) {
-    GlassCard(
-        icon = Icons.Outlined.Smartphone,
-        title = "My Device",
-        subtitle = "Device identity"
-    ) {
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    InfoCard {
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+        SectionHeader(
+            icon = Icons.Outlined.Devices,
+            title = "DEVICE",
+            color = Cyan
+        )
 
-                Text(
-                    text = deviceInfo.manufacturer,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Text(
-                    text = deviceInfo.model,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Text(
-                    text = deviceInfo.deviceName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            DeviceBadge(
-                text = if (deviceInfo.deviceType == DeviceType.TABLET) {
-                    "Tablet"
-                } else {
-                    "Phone"
-                }
-            )
-
-            DeviceBadge(
-                text = "Android ${deviceInfo.androidVersion}"
-            )
-        }
-    }
-}
-
-
-// ================================================================
-// ANDROID CARD
-// ================================================================
-
-@Composable
-private fun AndroidCard(
-    deviceInfo: DeviceInfo
-) {
-    GlassCard(
-        icon = Icons.Outlined.Security,
-        title = "Android",
-        subtitle = "Software & security"
-    ) {
+        Spacer(modifier = Modifier.height(10.dp))
 
         InfoRow(
-            label = "Android version",
-            value = "Android ${deviceInfo.androidVersion}"
+            label = "Manufacturer",
+            value = deviceInfo.manufacturer
         )
 
         InfoDivider()
 
         InfoRow(
-            label = "Security update",
-            value = formatSecurityPatch(deviceInfo.securityPatch)
+            label = "Model",
+            value = deviceInfo.model
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Brand",
+            value = deviceInfo.brandOrManufacturer()
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Board",
+            value = deviceInfo.boardName()
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Hardware",
+            value = deviceInfo.hardwareName()
         )
     }
 }
 
 
 // ================================================================
-// MEMORY CARD
+// SYSTEM
 // ================================================================
 
 @Composable
-private fun MemoryCard(
+private fun SystemCard(
     deviceInfo: DeviceInfo
 ) {
-    val memory = deviceInfo.memory
 
-    GlassCard(
-        icon = Icons.Outlined.Memory,
-        title = "Memory",
-        subtitle = "RAM usage"
-    ) {
+    InfoCard {
 
-        UsageHeader(
-            used = FileSizeFormatter.format(memory.usedBytes),
-            total = FileSizeFormatter.format(memory.totalBytes),
-            percent = memory.usagePercent
+        SectionHeader(
+            icon = Icons.Outlined.Memory,
+            title = "SYSTEM",
+            color = Blue
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
-
-        UsageProgress(
-            percent = memory.usagePercent
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         InfoRow(
-            label = "Available",
-            value = FileSizeFormatter.format(memory.availableBytes)
+            label = "Android Version",
+            value = deviceInfo.androidVersion
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        InfoDivider()
 
-        StatusText(
-            text = memoryStatus(memory.usagePercent)
+        InfoRow(
+            label = "SDK Level",
+            value = deviceInfo.sdkLevelText()
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Security Patch",
+            value = formatSecurityPatch(
+                deviceInfo.securityPatch
+            )
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Kernel Version",
+            value = deviceInfo.kernelVersionText()
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Build Number",
+            value = deviceInfo.buildNumberText()
         )
     }
 }
 
 
 // ================================================================
-// STORAGE CARD
-// ================================================================
-
-@Composable
-private fun StorageCard(
-    deviceInfo: DeviceInfo
-) {
-    val storage = deviceInfo.storage
-
-    GlassCard(
-        icon = Icons.Outlined.Storage,
-        title = "Storage",
-        subtitle = "Internal storage usage"
-    ) {
-
-        UsageHeader(
-            used = FileSizeFormatter.format(storage.usedBytes),
-            total = FileSizeFormatter.format(storage.totalBytes),
-            percent = storage.usagePercent
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        UsageProgress(
-            percent = storage.usagePercent
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        InfoRow(
-            label = "Available",
-            value = FileSizeFormatter.format(storage.availableBytes)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        StatusText(
-            text = storageStatus(storage.usagePercent)
-        )
-    }
-}
-
-
-// ================================================================
-// DISPLAY CARD
+// DISPLAY
 // ================================================================
 
 @Composable
 private fun DisplayCard(
     deviceInfo: DeviceInfo
 ) {
+
     val display = deviceInfo.display
 
-    GlassCard(
-        icon = Icons.Outlined.Devices,
-        title = "Display",
-        subtitle = "Screen specifications"
-    ) {
+    InfoCard {
 
-        InfoRow(
-            label = "Screen size",
-            value = display.screenSizeInches?.let {
-                "%.1f inches".format(it)
-            } ?: "Not available"
+        SectionHeader(
+            icon = Icons.Outlined.Devices,
+            title = "DISPLAY",
+            color = Orange
         )
 
-        InfoDivider()
+        Spacer(modifier = Modifier.height(10.dp))
 
         InfoRow(
             label = "Resolution",
@@ -394,68 +478,178 @@ private fun DisplayCard(
         InfoDivider()
 
         InfoRow(
-            label = "Refresh rate",
+            label = "Refresh Rate",
             value = "${display.refreshRateHz} Hz"
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Density",
+            value = displayDensityText(deviceInfo)
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Screen Size",
+            value = display.screenSizeInches?.let {
+                "%.1f inches".format(it)
+            } ?: "Not available"
         )
     }
 }
 
 
 // ================================================================
-// BATTERY CARD
+// MEMORY & STORAGE
+// ================================================================
+
+@Composable
+private fun MemoryStorageCard(
+    deviceInfo: DeviceInfo
+) {
+
+    val memory = deviceInfo.memory
+    val storage = deviceInfo.storage
+
+    InfoCard {
+
+        SectionHeader(
+            icon = Icons.Outlined.Memory,
+            title = "MEMORY & STORAGE",
+            color = Cyan
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        InfoRow(
+            label = "Total RAM",
+            value = FileSizeFormatter.format(
+                memory.totalBytes
+            )
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Available RAM",
+            value = FileSizeFormatter.format(
+                memory.availableBytes
+            )
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Internal Storage",
+            value = FileSizeFormatter.format(
+                storage.totalBytes
+            )
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Available Storage",
+            value = FileSizeFormatter.format(
+                storage.availableBytes
+            )
+        )
+    }
+}
+
+
+// ================================================================
+// CAMERA
+// ================================================================
+//
+// Your current DeviceInfo model does not expose camera
+// information in the supplied implementation.
+//
+// This card is therefore shown as a UI section placeholder.
+// Once camera information is added to DeviceInfo, connect it here.
+// ================================================================
+
+@Composable
+private fun CameraCard() {
+
+    InfoCard {
+
+        SectionHeader(
+            icon = Icons.Outlined.Devices,
+            title = "CAMERA",
+            color = Blue
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        InfoRow(
+            label = "Rear Camera",
+            value = "Not available"
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Front Camera",
+            value = "Not available"
+        )
+
+        InfoDivider()
+
+        InfoRow(
+            label = "Video",
+            value = "Not available"
+        )
+    }
+}
+
+
+// ================================================================
+// BATTERY
 // ================================================================
 
 @Composable
 private fun BatteryCard(
     deviceInfo: DeviceInfo
 ) {
+
     val battery = deviceInfo.battery
 
-    GlassCard(
-        icon = Icons.Outlined.BatteryStd,
-        title = "Battery",
-        subtitle = "Power & charging"
-    ) {
+    InfoCard {
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        SectionHeader(
+            icon = Icons.Outlined.BatteryStd,
+            title = "BATTERY",
+            color = Orange
+        )
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+        Spacer(modifier = Modifier.height(10.dp))
 
-                Text(
-                    text = battery.percent?.let {
-                        "$it%"
-                    } ?: "N/A",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+        InfoRow(
+            label = "Battery Level",
+            value = battery.percent?.let {
+                "$it%"
+            } ?: "N/A"
+        )
 
-                Text(
-                    text = chargingStatusText(
-                        battery.isCharging,
-                        battery.status
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        InfoDivider()
 
-            BatteryStatusIndicator(
-                isCharging = battery.isCharging
+        InfoRow(
+            label = "Status",
+            value = chargingStatusText(
+                battery.isCharging,
+                battery.status
             )
-        }
+        )
 
-        Spacer(modifier = Modifier.height(18.dp))
+        InfoDivider()
 
         InfoRow(
             label = "Temperature",
             value = battery.temperatureC?.let {
-                temperatureText(it)
+                "%.0f°C".format(it)
             } ?: "Not available"
         )
 
@@ -472,18 +666,23 @@ private fun BatteryCard(
 
 
 // ================================================================
-// SENSORS CARD
+// SENSORS
 // ================================================================
 
 @Composable
 private fun SensorsCard(
     deviceInfo: DeviceInfo
 ) {
-    GlassCard(
-        icon = Icons.Outlined.Sensors,
-        title = "Sensors",
-        subtitle = "${deviceInfo.sensors.size} sensors detected"
-    ) {
+
+    InfoCard {
+
+        SectionHeader(
+            icon = Icons.Outlined.Sensors,
+            title = "SENSORS",
+            color = Cyan
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         deviceInfo.sensors.forEachIndexed { index, sensor ->
 
@@ -493,7 +692,7 @@ private fun SensorsCard(
             )
 
             if (index != deviceInfo.sensors.lastIndex) {
-                Spacer(modifier = Modifier.height(12.dp))
+                InfoDivider()
             }
         }
     }
@@ -501,226 +700,76 @@ private fun SensorsCard(
 
 
 // ================================================================
-// GLASS CARD
+// CARD
 // ================================================================
 
 @Composable
-private fun GlassCard(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
+private fun InfoCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
-    GlassButton(
-        onClick = {},
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .glassify(
-                style = GlassStyle.Thick
+            .clip(RoundedCornerShape(11.dp))
+            .background(CardBackground)
+            .border(
+                width = 1.dp,
+                color = CardBorder,
+                shape = RoundedCornerShape(11.dp)
             )
-    ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) {
-
-            // -----------------------------------------------------
-            // CARD HEADER
-            // -----------------------------------------------------
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(RoundedCornerShape(13.dp))
-                        .background(
-                            MaterialTheme.colorScheme.primaryContainer
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(22.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-
-                Spacer(modifier = Modifier.size(12.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            content()
-        }
-    }
-}
-
-
-// ================================================================
-// USAGE HEADER
-// ================================================================
-
-@Composable
-private fun UsageHeader(
-    used: String,
-    total: String,
-    percent: Int
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Bottom
-    ) {
-
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-
-            Text(
-                text = used,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Text(
-                text = "of $total used",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Text(
-            text = "$percent%",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-
-// ================================================================
-// PROGRESS
-// ================================================================
-
-@Composable
-private fun UsageProgress(
-    percent: Int
-) {
-    LinearProgressIndicator(
-        progress = {
-            percent.coerceIn(0, 100) / 100f
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(8.dp)
-            .clip(CircleShape)
+            .padding(
+                horizontal = 20.dp,
+                vertical = 16.dp
+            ),
+        content = content
     )
 }
 
 
 // ================================================================
-// SENSOR ROW
+// SECTION HEADER
 // ================================================================
 
 @Composable
-private fun SensorRow(
-    name: String,
-    isAvailable: Boolean
+private fun SectionHeader(
+    icon: ImageVector,
+    title: String,
+    color: Color
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(22.dp)
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Text(
+                text = title,
+                color = color,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Spacer(modifier = Modifier.height(11.dp))
 
         Box(
             modifier = Modifier
-                .size(9.dp)
-                .clip(CircleShape)
-                .background(
-                    if (isAvailable) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.outline
-                    }
-                )
-        )
-
-        Spacer(modifier = Modifier.size(10.dp))
-
-        Text(
-            text = name,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Text(
-            text = if (isAvailable) {
-                "Available"
-            } else {
-                "Unavailable"
-            },
-            style = MaterialTheme.typography.labelMedium,
-            color = if (isAvailable) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            }
-        )
-    }
-}
-
-
-// ================================================================
-// BATTERY INDICATOR
-// ================================================================
-
-@Composable
-private fun BatteryStatusIndicator(
-    isCharging: Boolean
-) {
-    Box(
-        modifier = Modifier
-            .size(46.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .background(
-                MaterialTheme.colorScheme.primaryContainer
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Icon(
-            imageVector = Icons.Outlined.BatteryStd,
-            contentDescription = null,
-            modifier = Modifier.size(25.dp),
-            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(DividerColor)
         )
     }
 }
@@ -735,25 +784,32 @@ private fun InfoRow(
     label: String,
     value: String
 ) {
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 35.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
         Text(
             text = label,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = TextSecondary,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier.weight(1f)
         )
 
-        Spacer(modifier = Modifier.size(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium,
+            color = TextPrimary,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
+            fontFamily = FontFamily.Monospace,
+            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+            maxLines = 1
         )
     }
 }
@@ -765,19 +821,30 @@ private fun InfoRow(
 
 @Composable
 private fun InfoDivider() {
-    Spacer(modifier = Modifier.height(10.dp))
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(DividerColor)
+    )
 }
 
 
 // ================================================================
-// STATUS
+// SENSOR ROW
 // ================================================================
 
 @Composable
-private fun StatusText(
-    text: String
+private fun SensorRow(
+    name: String,
+    isAvailable: Boolean
 ) {
+
     Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 34.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -786,45 +853,127 @@ private fun StatusText(
                 .size(7.dp)
                 .clip(CircleShape)
                 .background(
-                    MaterialTheme.colorScheme.primary
+                    if (isAvailable) {
+                        Green
+                    } else {
+                        TextMuted
+                    }
                 )
         )
 
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
         Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            text = name,
+            color = TextSecondary,
+            fontSize = 14.sp,
+            modifier = Modifier.weight(1f)
+        )
+
+        Text(
+            text = if (isAvailable) {
+                "Available"
+            } else {
+                "Unavailable"
+            },
+            color = if (isAvailable) {
+                Green
+            } else {
+                TextMuted
+            },
+            fontSize = 12.sp,
+            fontFamily = FontFamily.Monospace
         )
     }
 }
 
 
 // ================================================================
-// BADGE
+// BOTTOM NAVIGATION
 // ================================================================
 
 @Composable
-private fun DeviceBadge(
-    text: String
-) {
+private fun DeviceBottomNavigation() {
+
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(50))
+            .fillMaxWidth()
             .background(
-                MaterialTheme.colorScheme.surfaceVariant
+                PanelBackground.copy(alpha = 0.98f)
+            )
+            .border(
+                width = 1.dp,
+                color = CardBorder
             )
             .padding(
-                horizontal = 10.dp,
-                vertical = 5.dp
-            )
+                horizontal = 8.dp,
+                vertical = 10.dp
+            ),
+        contentAlignment = Alignment.BottomCenter
     ) {
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            BottomNavItem(
+                icon = Icons.Outlined.BarChart,
+                title = "Diagnostics"
+            )
+
+            BottomNavItem(
+                icon = Icons.Outlined.Sensors,
+                title = "Sensors"
+            )
+
+            BottomNavItem(
+                icon = Icons.Outlined.Storage,
+                title = "Storage"
+            )
+
+            BottomNavItem(
+                icon = Icons.Outlined.Devices,
+                title = "Network"
+            )
+        }
+    }
+}
+
+
+// ================================================================
+// BOTTOM NAV ITEM
+// ================================================================
+
+@Composable
+private fun BottomNavItem(
+    icon: ImageVector,
+    title: String
+) {
+
+    Column(
+        modifier = Modifier.padding(
+            horizontal = 8.dp
+        ),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = TextSecondary,
+            modifier = Modifier.size(21.dp)
+        )
+
+        Spacer(modifier = Modifier.height(5.dp))
+
         Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            text = title,
+            color = TextSecondary,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Monospace
         )
     }
 }
@@ -836,26 +985,18 @@ private fun DeviceBadge(
 
 @Composable
 private fun DeviceInfoLoading() {
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(PanelBackground),
         contentAlignment = Alignment.Center
     ) {
 
-        GlassButton(
-            onClick = {},
-            modifier = Modifier
-                .size(100.dp)
-                .glassify(
-                    style = GlassStyle.Thick
-                )
-        ) {
-
-            CircularProgressIndicator(
-                modifier = Modifier.size(32.dp)
-            )
-        }
+        CircularProgressIndicator(
+            color = Cyan,
+            modifier = Modifier.size(36.dp)
+        )
     }
 }
 
@@ -869,59 +1010,49 @@ private fun DeviceInfoError(
     error: String?,
     onRetry: () -> Unit
 ) {
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(PanelBackground)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
 
-        GlassButton(
-            onClick = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .glassify(
-                    style = GlassStyle.Thick
-                )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Icon(
+                imageVector = Icons.Outlined.Warning,
+                contentDescription = null,
+                tint = Orange,
+                modifier = Modifier.size(42.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Unable to load device information",
+                color = TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(7.dp))
+
+            Text(
+                text = error ?: "Something went wrong",
+                color = TextSecondary,
+                fontSize = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Button(
+                onClick = onRetry
             ) {
-
-                Icon(
-                    imageVector = Icons.Outlined.Warning,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp),
-                    tint = MaterialTheme.colorScheme.error
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Unable to load device information",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Text(
-                    text = error ?: "Something went wrong",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                Button(
-                    onClick = onRetry
-                ) {
-                    Text("Try again")
-                }
+                Text("Try again")
             }
         }
     }
@@ -932,55 +1063,16 @@ private fun DeviceInfoError(
 // HELPERS
 // ================================================================
 
-private fun memoryStatus(percent: Int): String {
-    return when {
-        percent >= 85 -> "Memory usage is high"
-        percent >= 70 -> "Memory usage is moderate"
-        else -> "Memory usage is normal"
-    }
-}
-
-private fun storageStatus(percent: Int): String {
-    return when {
-        percent >= 90 -> "Storage is almost full"
-        percent >= 75 -> "Storage is getting full"
-        else -> "Plenty of space"
-    }
-}
-
-private fun chargingStatusText(
-    isCharging: Boolean,
-    status: BatteryStatus
-): String {
-    return when {
-        status == BatteryStatus.FULL -> "Fully charged"
-        isCharging || status == BatteryStatus.CHARGING -> "Charging"
-        status == BatteryStatus.UNKNOWN -> "Not available"
-        else -> "Not charging"
-    }
-}
-
-private fun temperatureText(
-    celsius: Float
-): String {
-    val rounded = "%.0f".format(celsius)
-
-    val status = when {
-        celsius >= 40f -> "Warm — keep it cool"
-        celsius >= 35f -> "A bit warm"
-        celsius <= 10f -> "Cold"
-        else -> "Normal temperature"
-    }
-
-    return "$rounded°C — $status"
-}
-
 private fun formatSecurityPatch(
     raw: String?
 ): String {
-    if (raw.isNullOrBlank()) return "Not available"
+
+    if (raw.isNullOrBlank()) {
+        return "Not available"
+    }
 
     return try {
+
         val parsed = SimpleDateFormat(
             "yyyy-MM-dd",
             Locale.US
@@ -994,4 +1086,161 @@ private fun formatSecurityPatch(
     } catch (_: Exception) {
         raw
     }
+}
+
+
+private fun chargingStatusText(
+    isCharging: Boolean,
+    status: BatteryStatus
+): String {
+
+    return when {
+
+        status == BatteryStatus.FULL ->
+            "Fully charged"
+
+        isCharging || status == BatteryStatus.CHARGING ->
+            "Charging"
+
+        status == BatteryStatus.UNKNOWN ->
+            "Not available"
+
+        else ->
+            "Not charging"
+    }
+}
+
+
+// ================================================================
+// SAFE DEVICE FIELD HELPERS
+// ================================================================
+//
+// These use reflection so the UI won't fail to compile if your
+// current DeviceInfo model doesn't expose these optional fields.
+// If those fields already exist, they'll be displayed automatically.
+// ================================================================
+
+private fun DeviceInfo.brandOrManufacturer(): String {
+
+    return readStringProperty("brand")
+        ?: manufacturer
+}
+
+
+private fun DeviceInfo.boardName(): String {
+
+    return readStringProperty("board")
+        ?: "Not available"
+}
+
+
+private fun DeviceInfo.hardwareName(): String {
+
+    return readStringProperty("hardware")
+        ?: "Not available"
+}
+
+
+private fun DeviceInfo.sdkLevelText(): String {
+
+    return readAnyProperty(
+        "sdkLevel",
+        "sdkInt",
+        "sdkVersion"
+    )?.toString()
+        ?: "Not available"
+}
+
+
+private fun DeviceInfo.kernelVersionText(): String {
+
+    return readStringProperty(
+        "kernelVersion"
+    ) ?: "Not available"
+}
+
+
+private fun DeviceInfo.buildNumberText(): String {
+
+    return readStringProperty(
+        "buildNumber",
+        "buildId"
+    ) ?: "Not available"
+}
+
+
+private fun DeviceInfo.readStringProperty(
+    vararg names: String
+): String? {
+
+    return names.firstNotNullOfOrNull { name ->
+
+        try {
+
+            javaClass
+                .declaredFields
+                .firstOrNull {
+                    it.name.equals(
+                        name,
+                        ignoreCase = true
+                    )
+                }
+                ?.apply {
+                    isAccessible = true
+                }
+                ?.get(this)
+                ?.toString()
+                ?.takeIf {
+                    it.isNotBlank()
+                }
+
+        } catch (_: Exception) {
+            null
+        }
+    }
+}
+
+
+private fun DeviceInfo.readAnyProperty(
+    vararg names: String
+): Any? {
+
+    return names.firstNotNullOfOrNull { name ->
+
+        try {
+
+            javaClass
+                .declaredFields
+                .firstOrNull {
+                    it.name.equals(
+                        name,
+                        ignoreCase = true
+                    )
+                }
+                ?.apply {
+                    isAccessible = true
+                }
+                ?.get(this)
+
+        } catch (_: Exception) {
+            null
+        }
+    }
+}
+
+
+private fun displayDensityText(
+    deviceInfo: DeviceInfo
+): String {
+
+    return deviceInfo.readAnyProperty(
+        "densityDpi",
+        "density"
+    )?.let {
+        if (it is Number) {
+            "${it.toInt()} dpi"
+        } else {
+            it.toString()
+        }
+    } ?: "Not available"
 }
