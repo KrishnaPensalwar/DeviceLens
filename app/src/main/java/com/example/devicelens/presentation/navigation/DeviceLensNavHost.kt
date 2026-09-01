@@ -6,12 +6,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.devicelens.presentation.battery.BatteryScreen
+import com.example.devicelens.presentation.components.LensTab
 import com.example.devicelens.presentation.dashboard.DashboardScreen
 import com.example.devicelens.presentation.device.DeviceInfoScreen
-import com.example.devicelens.presentation.battery.BatteryScreen
+import com.example.devicelens.presentation.health.HealthScreen
 import com.example.devicelens.presentation.network.NetworkScreen
 import com.example.devicelens.presentation.storage.StorageScreen
-import com.example.devicelens.presentation.health.HealthScreen
 import com.example.devicelens.presentation.usage.UsageDetailScreen
 import com.example.devicelens.presentation.usage.UsageScreen
 
@@ -45,7 +46,8 @@ fun DeviceLensNavHost(
                 },
                 onUsageClick = {
                     navController.navigate(Routes.Usage.route)
-                }
+                },
+                onTabSelected = { tab -> navController.navigateTab(tab) }
             )
         }
 
@@ -64,7 +66,10 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Network.route
         ) {
-            NetworkScreen()
+            NetworkScreen(
+                onBack = { navController.popBackStack() },
+                onTabSelected = { tab -> navController.navigateTab(tab) }
+            )
         }
 
         composable(
@@ -97,5 +102,21 @@ fun DeviceLensNavHost(
         ) {
             UsageDetailScreen()
         }
+    }
+}
+
+private fun NavHostController.navigateTab(tab: LensTab) {
+    val route = when (tab) {
+        LensTab.Diagnostics -> Routes.Dashboard.route
+        LensTab.Sensors -> Routes.Device.route
+        LensTab.Storage -> Routes.Storage.route
+        LensTab.Network -> Routes.Network.route
+    }
+    navigate(route) {
+        popUpTo(Routes.Dashboard.route) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }
