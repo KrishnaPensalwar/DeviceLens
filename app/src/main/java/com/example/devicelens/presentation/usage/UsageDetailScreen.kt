@@ -1,62 +1,100 @@
 package com.example.devicelens.presentation.usage
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Launch
 import androidx.compose.material.icons.outlined.QueryStats
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.devicelens.core.util.TimeFormatter
+import com.example.devicelens.domain.model.AppUsageDetail
 import com.example.devicelens.domain.model.UsagePeriod
 import com.example.devicelens.presentation.usage.components.UsageChart
 import com.example.devicelens.presentation.usage.components.periodLabel
 
+// ================================================================
+// DEVICE LENS COLORS
+// ================================================================
+
+private val DeviceBackground = Color(0xFF0D1111)
+private val DeviceCard = Color(0xFF171C1C)
+private val DeviceCardLight = Color(0xFF1D2323)
+private val DeviceBorder = Color(0xFF303838)
+
+private val DeviceCyan = Color(0xFF6BDAD8)
+private val DeviceCyanDark = Color(0xFF008F8F)
+
+private val DeviceBlue = Color(0xFF9BAEFF)
+
+private val DeviceText = Color(0xFFE3E8E8)
+private val DeviceTextSecondary = Color(0xFFB8C1C1)
+private val DeviceTextMuted = Color(0xFF7F8A8A)
+
+
+// ================================================================
+// MAIN SCREEN
+// ================================================================
+
 @Composable
 fun UsageDetailScreen(
+    onBack: () -> Unit = {},
     viewModel: UsageDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     when {
         uiState.isLoading -> {
-            LoadingContent()
+            UsageDetailLoading()
         }
 
         uiState.error != null -> {
-            ErrorContent(
+            UsageDetailError(
                 message = uiState.error!!,
                 onRetry = viewModel::retry
             )
@@ -65,7 +103,8 @@ fun UsageDetailScreen(
         uiState.detail != null -> {
             UsageDetailContent(
                 uiState = uiState,
-                onPeriodSelected = viewModel::onPeriodSelected
+                onPeriodSelected = viewModel::onPeriodSelected,
+                onBack = onBack
             )
         }
     }
@@ -77,22 +116,31 @@ fun UsageDetailScreen(
 // ================================================================
 
 @Composable
-private fun LoadingContent() {
+private fun UsageDetailLoading() {
+
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DeviceBackground),
         contentAlignment = Alignment.Center
     ) {
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CircularProgressIndicator()
 
-            Spacer(modifier = Modifier.height(12.dp))
+            CircularProgressIndicator(
+                color = DeviceCyan
+            )
+
+            Spacer(
+                modifier = Modifier.height(14.dp)
+            )
 
             Text(
                 text = "Loading usage details...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = DeviceTextSecondary,
+                fontSize = 14.sp
             )
         }
     }
@@ -104,36 +152,58 @@ private fun LoadingContent() {
 // ================================================================
 
 @Composable
-private fun ErrorContent(
+private fun UsageDetailError(
     message: String,
     onRetry: () -> Unit
 ) {
+
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DeviceBackground)
+            .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
+
         Column(
-            modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            Icon(
+                imageVector = Icons.Outlined.QueryStats,
+                contentDescription = null,
+                modifier = Modifier.size(44.dp),
+                tint = DeviceCyan
+            )
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
             Text(
                 text = "Unable to load usage",
-                style = MaterialTheme.typography.titleLarge,
+                color = DeviceText,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
 
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = DeviceTextSecondary,
+                fontSize = 14.sp
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
 
-            Button(onClick = onRetry) {
+            Button(
+                onClick = onRetry
+            ) {
                 Text("Try again")
             }
         }
@@ -148,174 +218,271 @@ private fun ErrorContent(
 @Composable
 private fun UsageDetailContent(
     uiState: UsageDetailUiState,
-    onPeriodSelected: (UsagePeriod) -> Unit
+    onPeriodSelected: (UsagePeriod) -> Unit,
+    onBack: () -> Unit
 ) {
+
     val detail = uiState.detail ?: return
 
-    androidx.compose.foundation.lazy.LazyColumn(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+            .background(DeviceBackground),
+
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = 14.dp,
+            bottom = 28.dp
+        ),
+
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
+        // ========================================================
+        // TOP BAR
+        // ========================================================
+
         item {
-            Spacer(modifier = Modifier.height(8.dp))
+
+            DeviceLensTopBar(
+                onBack = onBack
+            )
         }
 
-        // ---------------------------------------------------------
+
+        // ========================================================
         // APP HEADER
-        // ---------------------------------------------------------
+        // ========================================================
 
         item {
-            AppHeaderCard(
+
+            AppIdentityCard(
                 appName = detail.app.appName,
                 packageName = detail.app.packageName
             )
         }
 
-        // ---------------------------------------------------------
+
+        // ========================================================
         // PERIOD SELECTOR
-        // ---------------------------------------------------------
+        // ========================================================
 
         item {
-            PeriodSelector(
+
+            UsagePeriodSelector(
                 selected = uiState.period,
                 onSelected = onPeriodSelected
             )
         }
 
-        // ---------------------------------------------------------
-        // USAGE SUMMARY
-        // ---------------------------------------------------------
+
+        // ========================================================
+        // SUMMARY
+        // ========================================================
 
         item {
-            UsageSummaryCard(detail)
-        }
 
-        // ---------------------------------------------------------
-        // BREAKDOWN
-        // ---------------------------------------------------------
-
-        item {
-            BreakdownCard(detail)
-        }
-
-        // ---------------------------------------------------------
-        // TIMELINE HEADER
-        // ---------------------------------------------------------
-
-        item {
-            SectionHeader(
-                icon = Icons.Outlined.History,
-                title = "Timeline",
-                subtitle = "Recent app sessions"
+            UsageSummaryCard(
+                detail = detail
             )
         }
 
-        // ---------------------------------------------------------
+
+        // ========================================================
+        // BREAKDOWN
+        // ========================================================
+
+        item {
+
+            UsageBreakdownCard(
+                detail = detail
+            )
+        }
+
+
+        // ========================================================
+        // TIMELINE HEADER
+        // ========================================================
+
+        item {
+
+            TimelineHeader()
+        }
+
+
+        // ========================================================
         // TIMELINE
-        // ---------------------------------------------------------
+        // ========================================================
 
         if (detail.sessions.isEmpty()) {
 
             item {
+
                 EmptyTimelineCard()
             }
 
         } else {
 
-            items(
-                count = detail.sessions.size,
-                key = { index ->
-                    detail.sessions[index].startMillis
+            itemsIndexed(
+                items = detail.sessions,
+                key = { _, session ->
+                    session.startMillis
                 }
-            ) { index ->
+            ) { index, session ->
 
-                val session = detail.sessions[index]
-
-                SessionCard(
+                TimelineSessionItem(
                     startMillis = session.startMillis,
                     endMillis = session.endMillis,
-                    durationMillis = session.durationMillis
+                    durationMillis = session.durationMillis,
+                    isFirst = index == 0,
+                    isLast = index == detail.sessions.lastIndex
                 )
             }
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 
 // ================================================================
-// APP HEADER CARD
+// TOP BAR
 // ================================================================
 
 @Composable
-private fun AppHeaderCard(
+private fun DeviceLensTopBar(
+    onBack: () -> Unit
+) {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(54.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier.size(42.dp)
+        ) {
+
+            Icon(
+                imageVector = Icons.Outlined.ArrowBack,
+                contentDescription = "Back",
+                tint = DeviceCyan,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+
+            Text(
+                text = "DeviceLens",
+                color = DeviceCyan,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        IconButton(
+            onClick = {},
+            modifier = Modifier.size(42.dp)
+        ) {
+
+            Icon(
+                imageVector = Icons.Outlined.Settings,
+                contentDescription = "Settings",
+                tint = DeviceTextSecondary,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+
+
+// ================================================================
+// APP IDENTITY CARD
+// ================================================================
+
+@Composable
+private fun AppIdentityCard(
     appName: String,
     packageName: String
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(DeviceCardLight)
+            .border(
+                width = 1.dp,
+                color = DeviceBorder,
+                shape = RoundedCornerShape(22.dp)
+            )
+            .padding(
+                horizontal = 22.dp,
+                vertical = 22.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
+
+        // --------------------------------------------------------
+        // APP ICON
+        // --------------------------------------------------------
+
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .size(80.dp)
+                .clip(RoundedCornerShape(17.dp))
+                .background(DeviceBackground),
+            contentAlignment = Alignment.Center
         ) {
 
-            Box(
-                modifier = Modifier
-                    .size(54.dp)
-                    .clip(RoundedCornerShape(17.dp))
-                    .background(
-                        MaterialTheme.colorScheme.surface
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Apps,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+            Icon(
+                imageVector = Icons.Outlined.Apps,
+                contentDescription = null,
+                modifier = Modifier.size(34.dp),
+                tint = DeviceCyan
+            )
+        }
 
-            Spacer(modifier = Modifier.size(14.dp))
+        Spacer(
+            modifier = Modifier.width(22.dp)
+        )
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+        // --------------------------------------------------------
+        // APP NAME
+        // --------------------------------------------------------
 
-                Text(
-                    text = appName,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
 
-                Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = appName,
+                color = DeviceText,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
-                Text(
-                    text = packageName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            Spacer(
+                modifier = Modifier.height(4.dp)
+            )
+
+            Text(
+                text = packageName,
+                color = DeviceTextSecondary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = FontFamily.Monospace,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -326,151 +493,212 @@ private fun AppHeaderCard(
 // ================================================================
 
 @Composable
-private fun PeriodSelector(
+private fun UsagePeriodSelector(
     selected: UsagePeriod,
     onSelected: (UsagePeriod) -> Unit
 ) {
+
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+
         UsagePeriod.entries.forEach { period ->
 
-            FilterChip(
-                selected = selected == period,
-                onClick = {
-                    onSelected(period)
-                },
-                label = {
-                    Text(periodLabel(period))
-                }
-            )
+            val isSelected = selected == period
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(38.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        if (isSelected) {
+                            DeviceCyanDark
+                        } else {
+                            DeviceCardLight
+                        }
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (isSelected) {
+                            DeviceCyanDark
+                        } else {
+                            DeviceBorder
+                        },
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .clickableWithoutRipple {
+                        onSelected(period)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+
+                Text(
+                    text = periodLabel(period),
+                    color = if (isSelected) {
+                        Color.White
+                    } else {
+                        DeviceTextSecondary
+                    },
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
         }
     }
 }
 
 
 // ================================================================
-// USAGE SUMMARY CARD
+// USAGE SUMMARY
 // ================================================================
 
 @Composable
 private fun UsageSummaryCard(
-    detail: com.example.devicelens.domain.model.AppUsageDetail
+    detail: AppUsageDetail
 ) {
-    val percentage = detail.app.percentOfTotal
-        .coerceIn(0.0, 100.0).toDouble()
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+    val percentage = detail.app.percentOfTotal
+        .coerceIn(0.0, 100.0)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(DeviceCard)
+            .border(
+                width = 1.dp,
+                color = DeviceBorder,
+                shape = RoundedCornerShape(24.dp)
+            )
+            .padding(22.dp)
     ) {
 
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+        // --------------------------------------------------------
+        // TITLE
+        // --------------------------------------------------------
+
+        SectionTitle(
+            icon = Icons.Outlined.QueryStats,
+            title = "Usage Summary"
+        )
+
+        Spacer(
+            modifier = Modifier.height(24.dp)
+        )
+
+        // --------------------------------------------------------
+        // USAGE + PERCENTAGE
+        // --------------------------------------------------------
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom
         ) {
 
-            SectionTitle(
-                icon = Icons.Outlined.QueryStats,
-                title = "Usage Summary"
-            )
-
-            // -----------------------------------------------------
-            // MAIN USAGE
-            // -----------------------------------------------------
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
 
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-
-                    Text(
-                        text = "Total usage",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(3.dp))
-
-                    Text(
-                        text = TimeFormatter.formatDuration(
-                            detail.app.usageMillis
-                        ),
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-
-                    Text(
-                        text = "%.0f%%".format(
-                            detail.app.percentOfTotal
-                        ),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Text(
-                        text = "of total usage",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // -----------------------------------------------------
-            // PROGRESS
-            // -----------------------------------------------------
-
-            LinearProgressIndicator(
-                progress = {
-                    percentage.toFloat() / 100f
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(7.dp)
-                    .clip(CircleShape)
-            )
-
-            // -----------------------------------------------------
-            // DETAILS
-            // -----------------------------------------------------
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-
-                DetailMetric(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Outlined.AccessTime,
-                    label = "Last used",
-                    value = TimeFormatter.formatLastUsed(
-                        detail.app.lastUsedMillis
-                    )
+                Text(
+                    text = "TOTAL USAGE",
+                    color = DeviceTextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    letterSpacing = 1.5.sp
                 )
 
-                detail.app.launchCount?.let { count ->
+                Spacer(
+                    modifier = Modifier.height(4.dp)
+                )
 
-                    DetailMetric(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Outlined.Launch,
-                        label = "Launches",
-                        value = count.toString()
-                    )
-                }
+                Text(
+                    text = TimeFormatter.formatDuration(
+                        detail.app.usageMillis
+                    ),
+                    color = DeviceCyan,
+                    fontSize = 58.sp,
+                    lineHeight = 58.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+
+                Text(
+                    text = "%.0f%%".format(
+                        percentage
+                    ),
+                    color = DeviceBlue,
+                    fontSize = 27.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "of total\nusage",
+                    color = DeviceTextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+        }
+
+        Spacer(
+            modifier = Modifier.height(20.dp)
+        )
+
+        // --------------------------------------------------------
+        // PROGRESS
+        // --------------------------------------------------------
+
+        LinearProgressIndicator(
+            progress = {
+                (percentage / 100f).toFloat()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(CircleShape),
+            color = DeviceCyan,
+            trackColor = Color(0xFF081010)
+        )
+
+        Spacer(
+            modifier = Modifier.height(20.dp)
+        )
+
+        // --------------------------------------------------------
+        // METRICS
+        // --------------------------------------------------------
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            DetailMetricCard(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Outlined.AccessTime,
+                label = "Last used",
+                value = TimeFormatter.formatLastUsed(
+                    detail.app.lastUsedMillis
+                )
+            )
+
+            detail.app.launchCount?.let { count ->
+
+                DetailMetricCard(
+                    modifier = Modifier.weight(1f),
+                    icon = Icons.Outlined.Launch,
+                    label = "Launches",
+                    value = count.toString()
+                )
             }
         }
     }
@@ -482,143 +710,106 @@ private fun UsageSummaryCard(
 // ================================================================
 
 @Composable
-private fun DetailMetric(
+private fun DetailMetricCard(
     modifier: Modifier,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     label: String,
     value: String
 ) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+
+    Column(
+        modifier = modifier
+            .heightIn(min = 78.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(DeviceCardLight)
+            .border(
+                width = 1.dp,
+                color = DeviceBorder,
+                shape = RoundedCornerShape(14.dp)
+            )
+            .padding(13.dp)
     ) {
 
-        Column(
-            modifier = Modifier.padding(12.dp)
-        ) {
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.size(5.dp))
-
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Spacer(modifier = Modifier.height(5.dp))
-
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-}
-
-
-// ================================================================
-// BREAKDOWN CARD
-// ================================================================
-
-@Composable
-private fun BreakdownCard(
-    detail: com.example.devicelens.domain.model.AppUsageDetail
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
-    ) {
-
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-
-            SectionTitle(
-                icon = Icons.Outlined.QueryStats,
-                title = "Usage Breakdown"
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            UsageChart(
-                detail.buckets
-            )
-        }
-    }
-}
-
-
-// ================================================================
-// SECTION HEADER
-// ================================================================
-
-@Composable
-private fun SectionHeader(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    subtitle: String
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = 4.dp,
-                vertical = 4.dp
-            ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(38.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(
-                    MaterialTheme.colorScheme.primaryContainer
-                ),
-            contentAlignment = Alignment.Center
+        Row(
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.primary
+                modifier = Modifier.size(15.dp),
+                tint = DeviceTextSecondary
+            )
+
+            Spacer(
+                modifier = Modifier.width(6.dp)
+            )
+
+            Text(
+                text = label,
+                color = DeviceTextSecondary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace
             )
         }
 
-        Spacer(modifier = Modifier.size(10.dp))
+        Spacer(
+            modifier = Modifier.height(8.dp)
+        )
 
-        Column {
+        Text(
+            text = value,
+            color = DeviceText,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+
+// ================================================================
+// BREAKDOWN
+// ================================================================
+
+@Composable
+private fun UsageBreakdownCard(
+    detail: AppUsageDetail
+) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(DeviceCard)
+            .border(
+                width = 1.dp,
+                color = DeviceBorder,
+                shape = RoundedCornerShape(24.dp)
             )
+            .padding(
+                horizontal = 22.dp,
+                vertical = 22.dp
+            )
+    ) {
 
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        SectionTitle(
+            icon = Icons.Outlined.QueryStats,
+            title = "Usage Breakdown"
+        )
+
+        Spacer(
+            modifier = Modifier.height(18.dp)
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 180.dp)
+        ) {
+
+            UsageChart(
+                detail.buckets
             )
         }
     }
@@ -631,9 +822,10 @@ private fun SectionHeader(
 
 @Composable
 private fun SectionTitle(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     title: String
 ) {
+
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -642,91 +834,203 @@ private fun SectionTitle(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(21.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = DeviceTextSecondary
         )
 
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(
+            modifier = Modifier.width(9.dp)
+        )
 
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
+            color = DeviceTextSecondary,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }
 
 
 // ================================================================
-// SESSION CARD
+// TIMELINE HEADER
 // ================================================================
 
 @Composable
-private fun SessionCard(
-    startMillis: Long,
-    endMillis: Long,
-    durationMillis: Long
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
-        )
+private fun TimelineHeader() {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                top = 2.dp,
+                bottom = 2.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF29499F)),
+            contentAlignment = Alignment.Center
         ) {
 
-            // Timeline indicator
+            Icon(
+                imageVector = Icons.Outlined.History,
+                contentDescription = null,
+                modifier = Modifier.size(23.dp),
+                tint = Color(0xFFA7B7FF)
+            )
+        }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        Spacer(
+            modifier = Modifier.width(16.dp)
+        )
+
+        Column {
+
+            Text(
+                text = "Timeline",
+                color = DeviceText,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Recent app sessions",
+                color = DeviceTextSecondary,
+                fontSize = 13.sp
+            )
+        }
+    }
+}
+
+
+// ================================================================
+// TIMELINE SESSION
+// ================================================================
+
+@Composable
+private fun TimelineSessionItem(
+    startMillis: Long,
+    endMillis: Long,
+    durationMillis: Long,
+    isFirst: Boolean,
+    isLast: Boolean
+) {
+
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        // --------------------------------------------------------
+        // TIMELINE RAIL
+        // --------------------------------------------------------
+
+        Box(
+            modifier = Modifier
+                .width(32.dp)
+                .height(76.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+
+            if (!isFirst) {
 
                 Box(
                     modifier = Modifier
-                        .size(12.dp)
-                        .clip(CircleShape)
+                        .width(2.dp)
+                        .fillMaxHeight()
+                        .align(Alignment.TopCenter)
                         .background(
-                            MaterialTheme.colorScheme.primary
+                            Color(0xFF344040)
                         )
                 )
             }
 
-            Spacer(modifier = Modifier.size(12.dp))
+            Box(
+                modifier = Modifier
+                    .padding(top = 13.dp)
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isFirst) {
+                            DeviceCyan
+                        } else {
+                            Color(0xFF68718F)
+                        }
+                    )
+            )
+        }
 
-            Column(
-                modifier = Modifier.weight(1f)
+        Spacer(
+            modifier = Modifier.width(4.dp)
+        )
+
+        // --------------------------------------------------------
+        // SESSION CARD
+        // --------------------------------------------------------
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(14.dp))
+                .background(DeviceCardLight)
+                .border(
+                    width = 1.dp,
+                    color = DeviceBorder,
+                    shape = RoundedCornerShape(14.dp)
+                )
+                .padding(
+                    horizontal = 15.dp,
+                    vertical = 13.dp
+                )
+        ) {
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+
+                    Text(
+                        text = TimeFormatter.formatSession(
+                            startMillis,
+                            endMillis
+                        ),
+                        color = DeviceText,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(3.dp)
+                    )
+
+                    Text(
+                        text = "Session duration",
+                        color = DeviceTextSecondary,
+                        fontSize = 12.sp
+                    )
+                }
+
                 Text(
-                    text = TimeFormatter.formatSession(
-                        startMillis,
-                        endMillis
+                    text = TimeFormatter.formatDuration(
+                        durationMillis
                     ),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Spacer(modifier = Modifier.height(3.dp))
-
-                Text(
-                    text = "Session duration",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (isFirst) {
+                        DeviceCyan
+                    } else {
+                        DeviceBlue
+                    },
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
                 )
             }
-
-            Text(
-                text = TimeFormatter.formatDuration(
-                    durationMillis
-                ),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
         }
     }
 }
@@ -738,43 +1042,73 @@ private fun SessionCard(
 
 @Composable
 private fun EmptyTimelineCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(DeviceCardLight)
+            .border(
+                width = 1.dp,
+                color = DeviceBorder,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
     ) {
 
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Icon(
                 imageVector = Icons.Outlined.History,
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                modifier = Modifier.size(30.dp),
+                tint = DeviceTextMuted
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
 
             Text(
                 text = "No sessions found",
-                style = MaterialTheme.typography.titleSmall,
+                color = DeviceText,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(
+                modifier = Modifier.height(4.dp)
+            )
 
             Text(
                 text = "There is no session timeline for this period.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = DeviceTextMuted,
+                fontSize = 12.sp
             )
         }
     }
+}
+
+
+// ================================================================
+// CLICKABLE WITHOUT RIPPLE
+// ================================================================
+
+@Composable
+private fun Modifier.clickableWithoutRipple(
+    onClick: () -> Unit
+): Modifier {
+
+    val interactionSource = remember {
+        MutableInteractionSource()
+    }
+
+    return this.clickable(
+        interactionSource = interactionSource,
+        indication = null,
+        onClick = onClick
+    )
 }
