@@ -63,6 +63,7 @@ import com.example.devicelens.core.util.TimeFormatter
 import com.example.devicelens.domain.model.AppUsageInfo
 import com.example.devicelens.domain.model.UsagePeriod
 import com.example.devicelens.domain.model.UsageSortOption
+import com.example.devicelens.presentation.device.DeviceInfoTopBar
 import com.example.devicelens.presentation.usage.components.periodLabel
 import java.util.Locale
 
@@ -107,7 +108,8 @@ private val InsightBorder = Color(0xFF31466D)
 @Composable
 fun UsageScreen(
     onAppClick: (String) -> Unit,
-    viewModel: UsageViewModel = hiltViewModel()
+    viewModel: UsageViewModel = hiltViewModel(),
+    onBack: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -155,7 +157,8 @@ fun UsageScreen(
                 onSortSelected = viewModel::onSortSelected,
                 onSearchQueryChanged = viewModel::onSearchQueryChanged,
                 onRefresh = viewModel::refresh,
-                onAppClick = onAppClick
+                onAppClick = onAppClick,
+                onBack
             )
         }
     }
@@ -173,7 +176,8 @@ private fun UsageContent(
     onSortSelected: (UsageSortOption) -> Unit,
     onSearchQueryChanged: (String) -> Unit,
     onRefresh: () -> Unit,
-    onAppClick: (String) -> Unit
+    onAppClick: (String) -> Unit,
+    onBack : () -> Unit
 ) {
 
     Box(
@@ -189,7 +193,6 @@ private fun UsageContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp)
                 .clip(
                     RoundedCornerShape(14.dp)
                 )
@@ -220,20 +223,7 @@ private fun UsageContent(
                 // ------------------------------------------------
 
                 item {
-                    DeviceLensHeader(
-                        isRefreshing = uiState.isRefreshing,
-                        onRefresh = onRefresh
-                    )
-                }
-
-                // ------------------------------------------------
-                // APP USAGE HEADER
-                // ------------------------------------------------
-
-                item {
-                    UsageTitle{
-                        onRefresh()
-                    }
+                    DeviceInfoTopBar("App Usage") { onBack()}
                 }
 
                 // ------------------------------------------------
@@ -325,12 +315,6 @@ private fun UsageContent(
                     }
                 }
             }
-
-            // ----------------------------------------------------
-            // BOTTOM NAVIGATION
-            // ----------------------------------------------------
-
-            UsageBottomNavigation()
         }
     }
 }

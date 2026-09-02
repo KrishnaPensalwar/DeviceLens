@@ -81,13 +81,15 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Storage.route
         ) {
-            StorageScreen()
+            StorageScreen{
+                navController.popBackStack()
+            }
         }
 
         composable(
             route = Routes.Health.route
         ) {
-            HealthScreen(){
+            HealthScreen{
                 navController.popBackStack()
             }
         }
@@ -98,7 +100,11 @@ fun DeviceLensNavHost(
             UsageScreen(
                 onAppClick = { packageName ->
                     navController.navigate(usageDetailRoute(packageName))
+                },
+                onBack = {
+                    navController.popBackStack()
                 }
+
             )
         }
 
