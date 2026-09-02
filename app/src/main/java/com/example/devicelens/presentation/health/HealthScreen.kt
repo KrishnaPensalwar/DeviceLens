@@ -48,6 +48,8 @@ import com.example.devicelens.domain.model.HealthArea
 import com.example.devicelens.domain.model.HealthIssue
 import com.example.devicelens.domain.model.HealthRecommendation
 import com.example.devicelens.domain.model.HealthReport
+import com.example.devicelens.presentation.device.DeviceInfoTopBar
+import com.example.devicelens.presentation.health.components.HealthMetricItem
 
 
 // ================================================================
@@ -56,7 +58,8 @@ import com.example.devicelens.domain.model.HealthReport
 
 @Composable
 fun HealthScreen(
-    viewModel: HealthViewModel = hiltViewModel()
+    viewModel: HealthViewModel = hiltViewModel(),
+    onBack : () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -80,7 +83,9 @@ fun HealthScreen(
                 report = uiState.report!!,
                 recommendations = uiState.recommendations,
                 onCheckAgain = viewModel::checkHealth
-            )
+            ){
+                onBack()
+            }
         }
     }
 }
@@ -94,7 +99,8 @@ fun HealthScreen(
 private fun HealthContent(
     report: HealthReport,
     recommendations: List<HealthRecommendation>,
-    onCheckAgain: () -> Unit
+    onCheckAgain: () -> Unit,
+    onBack : () -> Unit
 ) {
 
     LazyColumn(
@@ -119,9 +125,9 @@ private fun HealthContent(
         // --------------------------------------------------------
 
         item {
-            HealthTopBar(
-                onRefresh = onCheckAgain
-            )
+            DeviceInfoTopBar("Device Health") {
+                onBack()
+            }
         }
 
         // --------------------------------------------------------
@@ -454,7 +460,7 @@ private fun StatusPill(
 
 @Composable
 private fun HealthMetricCard(
-    area: Any
+    area: HealthArea
 ) {
 
     /*
@@ -488,17 +494,8 @@ private fun HealthMetricCard(
             )
     ) {
 
-        /*
-         * Use your existing component.
-         *
-         * If HealthMetricItem currently has its own Card/GlassButton,
-         * remove that outer container from HealthMetricItem so this
-         * becomes the only card.
-         */
-
-        @Suppress("UNCHECKED_CAST")
-        com.example.devicelens.presentation.health.components.HealthMetricItem(
-            area = area as HealthArea
+        HealthMetricItem(
+            area = area
         )
     }
 }

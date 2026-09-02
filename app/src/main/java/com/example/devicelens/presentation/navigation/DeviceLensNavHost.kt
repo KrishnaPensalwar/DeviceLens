@@ -87,7 +87,9 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Health.route
         ) {
-            HealthScreen()
+            HealthScreen(){
+                navController.popBackStack()
+            }
         }
 
         composable(
