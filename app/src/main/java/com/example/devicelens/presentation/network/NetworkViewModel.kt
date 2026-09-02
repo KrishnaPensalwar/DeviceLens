@@ -21,32 +21,32 @@ class NetworkViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     init {
-        loadNetwork()
+        testNetwork()
     }
 
-    fun loadNetwork() {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(isLoading = true, error = null)
-            }
-            try {
-                val info = runNetworkTestUseCase.invoke()
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        networkInfo = info
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = e.message ?: "Unable to read network information"
-                    )
-                }
-            }
-        }
-    }
+//    fun loadNetwork() {
+//        viewModelScope.launch {
+//            _uiState.update {
+//                it.copy(isLoading = true, error = null)
+//            }
+//            try {
+//                val info = runNetworkTestUseCase.invoke()
+//                _uiState.update {
+//                    it.copy(
+//                        isLoading = false,
+//                        networkInfo = info
+//                    )
+//                }
+//            } catch (e: Exception) {
+//                _uiState.update {
+//                    it.copy(
+//                        isLoading = false,
+//                        error = e.message ?: "Unable to read network information"
+//                    )
+//                }
+//            }
+//        }
+//    }
 
     fun testNetwork() {
         viewModelScope.launch {

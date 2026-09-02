@@ -3,6 +3,7 @@ package com.example.devicelens.presentation.device
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -90,7 +91,8 @@ private val Green = Color(0xFF00C58A)
 
 @Composable
 fun DeviceInfoScreen(
-    viewModel: DeviceInfoViewModel = hiltViewModel()
+    viewModel: DeviceInfoViewModel = hiltViewModel(),
+    onBackPress: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -110,7 +112,8 @@ fun DeviceInfoScreen(
 
         uiState.deviceInfo != null -> {
             DeviceInfoContent(
-                deviceInfo = uiState.deviceInfo
+                deviceInfo = uiState.deviceInfo,
+                onBackPress
             )
         }
     }
@@ -123,140 +126,132 @@ fun DeviceInfoScreen(
 
 @Composable
 private fun DeviceInfoContent(
-    deviceInfo: DeviceInfo?
+    deviceInfo: DeviceInfo?,
+    onBackPress: () -> Unit
 ) {
 
     if (deviceInfo == null) return
 
+
+    // ---------------------------------------------------------
+    // DEVICE LENS PANEL
+    // ---------------------------------------------------------
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(OuterBackground)
-    ) {
-
-
-        // ---------------------------------------------------------
-        // DEVICE LENS PANEL
-        // ---------------------------------------------------------
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(
-                    RoundedCornerShape(
-                        topStart = 14.dp,
-                        topEnd = 14.dp
-                    )
+            .clip(
+                RoundedCornerShape(
+                    topStart = 14.dp,
+                    topEnd = 14.dp
                 )
-                .background(PanelBackground)
-                .border(
-                    width = 1.dp,
-                    color = CardBorder,
-                    shape = RoundedCornerShape(
-                        topStart = 14.dp,
-                        topEnd = 14.dp
-                    )
-                ),
-            contentAlignment = Alignment.BottomCenter
+            )
+            .background(PanelBackground)
+            .border(
+                width = 1.dp,
+                color = CardBorder,
+                shape = RoundedCornerShape(
+                    topStart = 14.dp,
+                    topEnd = 14.dp
+                )
+            ),
+        contentAlignment = Alignment.BottomCenter
+    )
+    {
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 0.dp,
+                bottom = 90.dp
+            ),
+
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+            // -------------------------------------------------
+            // HEADER
+            // -------------------------------------------------
 
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 0.dp,
-                    bottom = 90.dp
-                ),
-
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-
-                // -------------------------------------------------
-                // HEADER
-                // -------------------------------------------------
-
-                item {
-                    DeviceInfoTopBar()
-                }
-
-                // -------------------------------------------------
-                // DEVICE
-                // -------------------------------------------------
-
-                item {
-                    DeviceCard(
-                        deviceInfo = deviceInfo
-                    )
-                }
-
-                // -------------------------------------------------
-                // SYSTEM
-                // -------------------------------------------------
-
-                item {
-                    SystemCard(
-                        deviceInfo = deviceInfo
-                    )
-                }
-
-                // -------------------------------------------------
-                // DISPLAY
-                // -------------------------------------------------
-
-                item {
-                    DisplayCard(
-                        deviceInfo = deviceInfo
-                    )
-                }
-
-                // -------------------------------------------------
-                // MEMORY & STORAGE
-                // -------------------------------------------------
-
-                item {
-                    MemoryStorageCard(
-                        deviceInfo = deviceInfo
-                    )
-                }
-
-                // -------------------------------------------------
-                // CAMERA
-                // -------------------------------------------------
-
-                item {
-                    CameraCard()
-                }
-
-                // -------------------------------------------------
-                // BATTERY
-                // -------------------------------------------------
-
-                item {
-                    BatteryCard(
-                        deviceInfo = deviceInfo
-                    )
-                }
-
-                // -------------------------------------------------
-                // SENSORS
-                // -------------------------------------------------
-
-                item {
-                    SensorsCard(
-                        deviceInfo = deviceInfo
-                    )
+            item {
+                DeviceInfoTopBar( title = "Device Info"){
+                        onBackPress()
                 }
             }
 
-            // -----------------------------------------------------
-            // BOTTOM NAV
-            // -----------------------------------------------------
+            // -------------------------------------------------
+            // DEVICE
+            // -------------------------------------------------
 
-            DeviceBottomNavigation()
+            item {
+                DeviceCard(
+                    deviceInfo = deviceInfo
+                )
+            }
+
+            // -------------------------------------------------
+            // SYSTEM
+            // -------------------------------------------------
+
+            item {
+                SystemCard(
+                    deviceInfo = deviceInfo
+                )
+            }
+
+            // -------------------------------------------------
+            // DISPLAY
+            // -------------------------------------------------
+
+            item {
+                DisplayCard(
+                    deviceInfo = deviceInfo
+                )
+            }
+
+            // -------------------------------------------------
+            // MEMORY & STORAGE
+            // -------------------------------------------------
+
+            item {
+                MemoryStorageCard(
+                    deviceInfo = deviceInfo
+                )
+            }
+
+            // -------------------------------------------------
+            // CAMERA
+            // -------------------------------------------------
+
+            item {
+                CameraCard()
+            }
+
+            // -------------------------------------------------
+            // BATTERY
+            // -------------------------------------------------
+
+            item {
+                BatteryCard(
+                    deviceInfo = deviceInfo
+                )
+            }
+
+            // -------------------------------------------------
+            // SENSORS
+            // -------------------------------------------------
+
+            item {
+                SensorsCard(
+                    deviceInfo = deviceInfo
+                )
+            }
         }
     }
+
 }
 
 
@@ -302,7 +297,10 @@ private fun DottedBackground() {
 // ================================================================
 
 @Composable
-private fun DeviceInfoTopBar() {
+fun DeviceInfoTopBar(
+    title: String,
+    onBackPress: () -> Unit,
+) {
 
     Row(
         modifier = Modifier
@@ -315,11 +313,15 @@ private fun DeviceInfoTopBar() {
             imageVector = Icons.Outlined.ArrowBack,
             contentDescription = "Back",
             tint = Cyan,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier
+                .size(24.dp)
+                .clickable {
+                    onBackPress()
+                }
         )
 
         Text(
-            text = "Device Info",
+            text = title,
             color = Cyan,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,

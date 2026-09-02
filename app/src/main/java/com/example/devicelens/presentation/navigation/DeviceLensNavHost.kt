@@ -1,6 +1,7 @@
 package com.example.devicelens.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,9 +19,11 @@ import com.example.devicelens.presentation.usage.UsageScreen
 
 @Composable
 fun DeviceLensNavHost(
-    navController: NavHostController
+    navController: NavHostController,
+    modifier: Modifier
 ) {
     NavHost(
+        modifier = modifier,
         navController = navController,
         startDestination = Routes.Dashboard.route
     ) {
@@ -54,13 +57,17 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Device.route
         ) {
-            DeviceInfoScreen()
+            DeviceInfoScreen{
+                navController.popBackStack()
+            }
         }
 
         composable(
             route = Routes.Battery.route
         ) {
-            BatteryScreen()
+            BatteryScreen{
+                navController.popBackStack()
+            }
         }
 
         composable(
@@ -68,7 +75,6 @@ fun DeviceLensNavHost(
         ) {
             NetworkScreen(
                 onBack = { navController.popBackStack() },
-                onTabSelected = { tab -> navController.navigateTab(tab) }
             )
         }
 

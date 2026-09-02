@@ -42,10 +42,8 @@ import com.example.devicelens.domain.model.NetworkInfo
 import com.example.devicelens.domain.model.SignalQuality
 import com.example.devicelens.presentation.components.GlowProgressBar
 import com.example.devicelens.presentation.components.LensCard
-import com.example.devicelens.presentation.components.LensScreen
-import com.example.devicelens.presentation.components.LensTab
-import com.example.devicelens.presentation.components.LensTopBar
 import com.example.devicelens.presentation.components.clickableWithoutRipple
+import com.example.devicelens.presentation.device.DeviceInfoTopBar
 import com.example.devicelens.ui.theme.LensCyan
 import com.example.devicelens.ui.theme.LensGreen
 import com.example.devicelens.ui.theme.LensMint
@@ -58,17 +56,13 @@ import com.example.devicelens.ui.theme.LensTextSecondary
 @Composable
 fun NetworkScreen(
     onBack: () -> Unit = {},
-    onTabSelected: (LensTab) -> Unit = {},
-    viewModel: NetworkViewModel = hiltViewModel()
+    viewModel: NetworkViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LensScreen(
-        currentTab = LensTab.Network,
-        onTabSelected = onTabSelected
-    ) {
-        LensTopBar(showBack = true, onBack = onBack)
+    Column(
 
+    ) {
         when {
             uiState.isLoading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -79,7 +73,7 @@ fun NetworkScreen(
             uiState.error != null -> {
                 NetworkError(
                     message = uiState.error,
-                    onRetry = viewModel::loadNetwork
+                    onRetry = viewModel::testNetwork
                 )
             }
 
@@ -89,7 +83,9 @@ fun NetworkScreen(
                     info = info,
                     isTesting = uiState.isTesting,
                     onTestClick = viewModel::testNetwork
-                )
+                ){
+                    onBack()
+                }
             }
         }
     }
@@ -99,7 +95,8 @@ fun NetworkScreen(
 private fun NetworkContent(
     info: NetworkInfo,
     isTesting: Boolean,
-    onTestClick: () -> Unit
+    onTestClick: () -> Unit,
+    onBack: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -111,14 +108,13 @@ private fun NetworkContent(
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
         item {
             Column {
-                Text(
-                    text = "Network Diagnostics",
-                    color = LensTextPrimary,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                DeviceInfoTopBar(title = "Network Diagnostics"){
+                    onBack()
+                }
+
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "Real-time analysis of active connections and network performance.",

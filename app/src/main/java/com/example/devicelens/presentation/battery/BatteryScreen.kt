@@ -19,19 +19,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BatteryAlert
 import androidx.compose.material.icons.outlined.BatteryStd
 import androidx.compose.material.icons.outlined.Bolt
-import androidx.compose.material.icons.outlined.CompareArrows
 import androidx.compose.material.icons.outlined.DeviceThermostat
 import androidx.compose.material.icons.outlined.ElectricBolt
 import androidx.compose.material.icons.outlined.HealthAndSafety
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Power
-import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.devicelens.domain.model.BatteryInfo
+import com.example.devicelens.presentation.device.DeviceInfoTopBar
 
 
 // ================================================================
@@ -80,10 +79,7 @@ private val Success = Color(0xFF00D68F)
 @Composable
 fun BatteryScreen(
     viewModel: BatteryViewModel = hiltViewModel(),
-    onBack: () -> Unit = {},
-    onHomeClick: () -> Unit = {},
-    onCompareClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onBack: () -> Unit
 ) {
 
     val uiState by viewModel.batteryState.collectAsStateWithLifecycle()
@@ -107,10 +103,7 @@ fun BatteryScreen(
         uiState.batteryInfo != null -> {
             BatteryContent(
                 batteryInfo = uiState.batteryInfo!!,
-                onBack = onBack,
-                onHomeClick = onHomeClick,
-                onCompareClick = onCompareClick,
-                onProfileClick = onProfileClick
+                onBack
             )
         }
     }
@@ -124,10 +117,7 @@ fun BatteryScreen(
 @Composable
 private fun BatteryContent(
     batteryInfo: BatteryInfo,
-    onBack: () -> Unit,
-    onHomeClick: () -> Unit,
-    onCompareClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onBack: () -> Unit
 ) {
 
     Column(
@@ -156,10 +146,9 @@ private fun BatteryContent(
             // ----------------------------------------------------
 
             item {
-
-                BatteryTopBar(
-                    onBack = onBack
-                )
+                DeviceInfoTopBar("Battery") {
+                    onBack()
+                }
             }
 
             // ----------------------------------------------------
@@ -196,66 +185,6 @@ private fun BatteryContent(
             }
         }
 
-        // --------------------------------------------------------
-        // BOTTOM NAVIGATION
-        // --------------------------------------------------------
-
-        BatteryBottomNavigation(
-            onHomeClick = onHomeClick,
-            onCompareClick = onCompareClick,
-            onProfileClick = onProfileClick
-        )
-    }
-}
-
-
-// ================================================================
-// TOP BAR
-// ================================================================
-
-@Composable
-private fun BatteryTopBar(
-    onBack: () -> Unit
-) {
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(58.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-
-            androidx.compose.material3.IconButton(
-                onClick = onBack,
-                modifier = Modifier.size(40.dp)
-            ) {
-
-                androidx.compose.material3.Icon(
-                    imageVector = Icons.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                    modifier = Modifier.size(24.dp),
-                    tint = TextPrimary
-                )
-            }
-        }
-
-        Spacer(
-            modifier = Modifier.width(8.dp)
-        )
-
-        androidx.compose.material3.Text(
-            text = "Battery",
-            color = TextPrimary,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 
@@ -294,7 +223,7 @@ private fun BatteryOverviewCard(
                 modifier = Modifier.weight(1f)
             ) {
 
-                androidx.compose.material3.Text(
+                Text(
                     text = "Battery Status",
                     color = TextPrimary,
                     fontSize = 20.sp,
@@ -305,7 +234,7 @@ private fun BatteryOverviewCard(
                     modifier = Modifier.height(3.dp)
                 )
 
-                androidx.compose.material3.Text(
+                Text(
                     text = batteryStatusTitle(batteryInfo),
                     color = TextSecondary,
                     fontSize = 14.sp
@@ -317,7 +246,7 @@ private fun BatteryOverviewCard(
             modifier = Modifier.height(22.dp)
         )
 
-        androidx.compose.material3.HorizontalDivider(
+        HorizontalDivider(
             color = Border
         )
 
@@ -338,11 +267,11 @@ private fun BatteryOverviewCard(
                 modifier = Modifier.weight(1f)
             ) {
 
-                androidx.compose.material3.Text(
+                Text(
                     text = "${batteryInfo.level}%",
                     color = TextPrimary,
-                    fontSize = 58.sp,
-                    lineHeight = 58.sp,
+                    fontSize = 42.sp,
+                    lineHeight = 42.sp,
                     fontWeight = FontWeight.Bold
                 )
 
@@ -371,7 +300,7 @@ private fun BatteryOverviewCard(
                         modifier = Modifier.width(8.dp)
                     )
 
-                    androidx.compose.material3.Text(
+                    Text(
                         text = chargingStatusText(batteryInfo),
                         color = TextSecondary,
                         fontSize = 14.sp,
@@ -442,7 +371,7 @@ private fun BatteryCircularIndicator(
         contentAlignment = Alignment.Center
     ) {
 
-        androidx.compose.material3.CircularProgressIndicator(
+        CircularProgressIndicator(
             progress = {
                 progress
             },
@@ -650,7 +579,7 @@ private fun CardHeader(
             modifier = Modifier.weight(1f)
         ) {
 
-            androidx.compose.material3.Text(
+            Text(
                 text = title,
                 color = TextPrimary,
                 fontSize = 20.sp,
@@ -661,7 +590,7 @@ private fun CardHeader(
                 modifier = Modifier.height(2.dp)
             )
 
-            androidx.compose.material3.Text(
+            Text(
                 text = subtitle,
                 color = TextSecondary,
                 fontSize = 14.sp
@@ -737,7 +666,7 @@ private fun BatteryInfoRow(
             modifier = Modifier.width(12.dp)
         )
 
-        androidx.compose.material3.Text(
+        Text(
             text = label,
             modifier = Modifier.weight(1f),
             color = TextPrimary,
@@ -745,7 +674,7 @@ private fun BatteryInfoRow(
             fontWeight = FontWeight.Medium
         )
 
-        androidx.compose.material3.Text(
+        Text(
             text = value,
             color = valueColor,
             fontSize = 14.sp,
@@ -773,135 +702,6 @@ private fun BatteryDivider() {
 
 
 // ================================================================
-// BOTTOM NAVIGATION
-// ================================================================
-
-@Composable
-private fun BatteryBottomNavigation(
-    onHomeClick: () -> Unit,
-    onCompareClick: () -> Unit,
-    onProfileClick: () -> Unit
-) {
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF151A1A))
-            .padding(
-                horizontal = 8.dp,
-                vertical = 8.dp
-            ),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        BottomNavItem(
-            icon = Icons.Outlined.Home,
-            label = "Home",
-            selected = false,
-            onClick = onHomeClick
-        )
-
-        BottomNavItem(
-            icon = Icons.Outlined.QueryStats,
-            label = "Diagnostics",
-            selected = true,
-            onClick = {}
-        )
-
-        BottomNavItem(
-            icon = Icons.Outlined.CompareArrows,
-            label = "Compare",
-            selected = false,
-            onClick = onCompareClick
-        )
-
-        BottomNavItem(
-            icon = Icons.Outlined.Person,
-            label = "Profile",
-            selected = false,
-            onClick = onProfileClick
-        )
-    }
-}
-
-
-// ================================================================
-// BOTTOM NAV ITEM
-// ================================================================
-
-@Composable
-private fun BottomNavItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-
-    Box(
-        modifier = Modifier
-            .width(92.dp)
-            .height(52.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(
-                if (selected) {
-                    Blue
-                } else {
-                    Color.Transparent
-                }
-            )
-            .then(
-                Modifier
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-
-        androidx.compose.material3.IconButton(
-            onClick = onClick,
-            modifier = Modifier.fillMaxSize()
-        ) {
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-
-                androidx.compose.material3.Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    modifier = Modifier.size(20.dp),
-                    tint = if (selected) {
-                        BlueLight
-                    } else {
-                        TextSecondary
-                    }
-                )
-
-                Spacer(
-                    modifier = Modifier.height(2.dp)
-                )
-
-                androidx.compose.material3.Text(
-                    text = label,
-                    fontSize = 11.sp,
-                    fontWeight = if (selected) {
-                        FontWeight.Bold
-                    } else {
-                        FontWeight.Medium
-                    },
-                    color = if (selected) {
-                        BlueLight
-                    } else {
-                        TextSecondary
-                    }
-                )
-            }
-        }
-    }
-}
-
-
-// ================================================================
 // LOADING
 // ================================================================
 
@@ -919,7 +719,7 @@ private fun BatteryLoading() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            androidx.compose.material3.CircularProgressIndicator(
+            CircularProgressIndicator(
                 color = CyanLight
             )
 
@@ -927,7 +727,7 @@ private fun BatteryLoading() {
                 modifier = Modifier.height(12.dp)
             )
 
-            androidx.compose.material3.Text(
+            Text(
                 text = "Loading battery...",
                 color = TextSecondary,
                 fontSize = 14.sp
@@ -974,7 +774,7 @@ private fun BatteryError(
                     modifier = Modifier.height(14.dp)
                 )
 
-                androidx.compose.material3.Text(
+                Text(
                     text = "Battery information unavailable",
                     color = TextPrimary,
                     fontSize = 18.sp,
@@ -985,7 +785,7 @@ private fun BatteryError(
                     modifier = Modifier.height(6.dp)
                 )
 
-                androidx.compose.material3.Text(
+                Text(
                     text = error ?: "Something went wrong",
                     color = TextSecondary,
                     fontSize = 14.sp
@@ -998,7 +798,7 @@ private fun BatteryError(
                 androidx.compose.material3.Button(
                     onClick = onRetry
                 ) {
-                    androidx.compose.material3.Text("Try again")
+                    Text("Try again")
                 }
             }
         }
@@ -1015,7 +815,7 @@ private fun MonoText(
     text: String
 ) {
 
-    androidx.compose.material3.Text(
+    Text(
         text = text,
         color = TextSecondary,
         fontSize = 11.sp,

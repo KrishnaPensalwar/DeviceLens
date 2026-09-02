@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,6 +54,7 @@ import com.example.devicelens.presentation.components.clickableWithoutRipple
 import com.example.devicelens.presentation.device.DeviceInfoViewModel
 import com.example.devicelens.presentation.health.HealthViewModel
 import com.example.devicelens.ui.theme.LensAmber
+import com.example.devicelens.ui.theme.LensBackground
 import com.example.devicelens.ui.theme.LensBlue
 import com.example.devicelens.ui.theme.LensCoral
 import com.example.devicelens.ui.theme.LensCyan
@@ -88,11 +90,16 @@ fun DashboardScreen(
         HealthStatus.POOR -> "Poor"
     }
 
-    LensScreen(
-        currentTab = LensTab.Diagnostics,
-        onTabSelected = onTabSelected
+//    LensScreen(
+//        currentTab = LensTab.Diagnostics,
+//        onTabSelected = onTabSelected
+//    ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LensBackground)
     ) {
-        LensTopBar()
+        LensTopBar(modifier = Modifier)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(
