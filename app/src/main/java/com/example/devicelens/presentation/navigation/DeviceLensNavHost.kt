@@ -1,25 +1,29 @@
 package com.example.devicelens.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.devicelens.presentation.battery.BatteryScreen
+import com.example.devicelens.presentation.components.LensTab
 import com.example.devicelens.presentation.dashboard.DashboardScreen
 import com.example.devicelens.presentation.device.DeviceInfoScreen
-import com.example.devicelens.presentation.battery.BatteryScreen
+import com.example.devicelens.presentation.health.HealthScreen
 import com.example.devicelens.presentation.network.NetworkScreen
 import com.example.devicelens.presentation.storage.StorageScreen
-import com.example.devicelens.presentation.health.HealthScreen
 import com.example.devicelens.presentation.usage.UsageDetailScreen
 import com.example.devicelens.presentation.usage.UsageScreen
 
 @Composable
 fun DeviceLensNavHost(
-    navController: NavHostController
+    navController: NavHostController,
+    modifier: Modifier
 ) {
     NavHost(
+        modifier = modifier,
         navController = navController,
         startDestination = Routes.Dashboard.route
     ) {
@@ -45,7 +49,7 @@ fun DeviceLensNavHost(
                 },
                 onUsageClick = {
                     navController.navigate(Routes.Usage.route)
-                }
+                },
             )
         }
 
@@ -64,13 +68,17 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Network.route
         ) {
-            NetworkScreen()
+            NetworkScreen(
+                onBack = { navController.popBackStack() },
+            )
         }
 
         composable(
             route = Routes.Storage.route
         ) {
-            StorageScreen()
+            StorageScreen{
+                navController.popBackStack()
+            }
         }
 
         composable(
@@ -85,7 +93,11 @@ fun DeviceLensNavHost(
             UsageScreen(
                 onAppClick = { packageName ->
                     navController.navigate(usageDetailRoute(packageName))
+                },
+                onBack = {
+                    navController.popBackStack()
                 }
+
             )
         }
 
@@ -97,5 +109,21 @@ fun DeviceLensNavHost(
         ) {
             UsageDetailScreen()
         }
+    }
+}
+
+private fun NavHostController.navigateTab(tab: LensTab) {
+    val route = when (tab) {
+        LensTab.Diagnostics -> Routes.Dashboard.route
+        LensTab.Sensors -> Routes.Device.route
+        LensTab.Storage -> Routes.Storage.route
+        LensTab.Network -> Routes.Network.route
+    }
+    navigate(route) {
+        popUpTo(Routes.Dashboard.route) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }

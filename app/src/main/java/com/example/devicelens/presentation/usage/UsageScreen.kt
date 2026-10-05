@@ -1,9 +1,13 @@
 package com.example.devicelens.presentation.usage
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,25 +18,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.CompareArrows
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.TipsAndUpdates
-import androidx.compose.material.icons.outlined.TrendingUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -42,34 +46,75 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.devicelens.core.util.TimeFormatter
+import com.example.devicelens.domain.model.AppUsageInfo
 import com.example.devicelens.domain.model.UsagePeriod
 import com.example.devicelens.domain.model.UsageSortOption
-import com.example.devicelens.presentation.usage.components.AppUsageItem
+import com.example.devicelens.presentation.components.LensBackBar
+import com.example.devicelens.ui.theme.LensAmber
+import com.example.devicelens.ui.theme.LensBackground
+import com.example.devicelens.ui.theme.LensBlue
+import com.example.devicelens.ui.theme.LensBlueDeep
+import com.example.devicelens.ui.theme.LensBorder
+import com.example.devicelens.ui.theme.LensCoral
+import com.example.devicelens.ui.theme.LensCyan
+import com.example.devicelens.ui.theme.LensCyanDark
+import com.example.devicelens.ui.theme.LensDangerBg
+import com.example.devicelens.ui.theme.LensDangerBorder
+import com.example.devicelens.ui.theme.LensDivider
+import com.example.devicelens.ui.theme.LensDot
+import com.example.devicelens.ui.theme.LensInsightBg
+import com.example.devicelens.ui.theme.LensInsightBorder
+import com.example.devicelens.ui.theme.LensPurple
+import com.example.devicelens.ui.theme.LensSurface
+import com.example.devicelens.ui.theme.LensSurfaceAlt
+import com.example.devicelens.ui.theme.LensTextMuted
+import com.example.devicelens.ui.theme.LensTextPrimary
+import com.example.devicelens.ui.theme.LensTextSecondary
+import com.example.devicelens.ui.theme.LensTrack
+import com.example.devicelens.ui.theme.LensType
 import com.example.devicelens.presentation.usage.components.periodLabel
-import io.github.sanketnawghare.glassify.compose.GlassButton
-import io.github.sanketnawghare.glassify.compose.GlassStyle
-import io.github.sanketnawghare.glassify.compose.glassify
+import java.util.Locale
 
+
+// ================================================================
+// COLORS
+// ================================================================
+
+
+
+// ================================================================
+// MAIN SCREEN
+// ================================================================
 
 @Composable
 fun UsageScreen(
     onAppClick: (String) -> Unit,
-    viewModel: UsageViewModel = hiltViewModel()
+    viewModel: UsageViewModel = hiltViewModel(),
+    onBack: () -> Unit
 ) {
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
+
         val observer = LifecycleEventObserver { _, event ->
+
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.refreshPermission()
             }
@@ -83,109 +128,33 @@ fun UsageScreen(
     }
 
     when {
+
         !uiState.hasUsageAccess -> {
             UsageAccessScreen()
         }
 
         uiState.isLoading -> {
-            LoadingContent()
+            UsageLoading()
         }
 
         uiState.error != null -> {
-            ErrorContent(
+            UsageError(
                 message = uiState.error!!,
                 onRetry = viewModel::refresh
             )
         }
 
         else -> {
+
             UsageContent(
                 uiState = uiState,
                 onPeriodSelected = viewModel::onPeriodSelected,
                 onSortSelected = viewModel::onSortSelected,
                 onSearchQueryChanged = viewModel::onSearchQueryChanged,
                 onRefresh = viewModel::refresh,
-                onAppClick = onAppClick
+                onAppClick = onAppClick,
+                onBack
             )
-        }
-    }
-}
-
-
-// ================================================================
-// LOADING
-// ================================================================
-
-@Composable
-private fun LoadingContent() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CircularProgressIndicator()
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Reading app usage...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-
-// ================================================================
-// ERROR
-// ================================================================
-
-@Composable
-private fun ErrorContent(
-    message: String,
-    onRetry: () -> Unit
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Unable to load usage",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            GlassButton(
-                onClick = onRetry,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .glassify(
-                        style = GlassStyle.Thick
-                    )
-            ) {
-                Text(
-                    text = "Try Again",
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
         }
     }
 }
@@ -202,198 +171,140 @@ private fun UsageContent(
     onSortSelected: (UsageSortOption) -> Unit,
     onSearchQueryChanged: (String) -> Unit,
     onRefresh: () -> Unit,
-    onAppClick: (String) -> Unit
+    onAppClick: (String) -> Unit,
+    onBack : () -> Unit
 ) {
-    LazyColumn(
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            top = 24.dp,
-            bottom = 24.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(LensBackground)
     ) {
 
-        // ---------------------------------------------------------
-        // HEADER
-        // ---------------------------------------------------------
+        // --------------------------------------------------------
+        // RESPONSIVE DEVICE LENS PANEL
+        // --------------------------------------------------------
 
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(
+                    RoundedCornerShape(14.dp)
+                )
+                .background(LensBackground)
+                .border(
+                    width = 1.dp,
+                    color = LensBorder,
+                    shape = RoundedCornerShape(14.dp)
+                ),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+
+                contentPadding = PaddingValues(
+                    start = 17.dp,
+                    end = 17.dp,
+                    top = 0.dp,
+                    bottom = 90.dp
+                ),
+
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "App Usage",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                // ------------------------------------------------
+                // DEVICE LENS HEADER
+                // ------------------------------------------------
 
-                    Text(
-                        text = "Understand how you spend time on your apps",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                // ------------------------------------------------
+                // TOTAL SCREEN TIME
+                // ------------------------------------------------
+
+                item {
+                    TotalScreenTimeCard(
+                        period = uiState.period,
+                        totalUsageMillis = uiState.totalUsageMillis
                     )
                 }
 
-                if (uiState.isRefreshing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
+                // ------------------------------------------------
+                // PERIOD FILTER
+                // ------------------------------------------------
+
+                item {
+                    PeriodSelector(
+                        selected = uiState.period,
+                        onSelected = onPeriodSelected
                     )
-                } else {
-                    IconButton(
-                        onClick = onRefresh
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Refresh,
-                            contentDescription = "Refresh"
+                }
+
+                // ------------------------------------------------
+                // USAGE INSIGHT
+                // ------------------------------------------------
+
+                if (uiState.recommendations.isNotEmpty()) {
+
+                    item {
+                        UsageInsightCard(
+                            recommendations = uiState.recommendations
                         )
                     }
                 }
-            }
-        }
 
+                // ------------------------------------------------
+                // SEARCH
+                // ------------------------------------------------
 
-        // ---------------------------------------------------------
-        // OVERVIEW
-        // ---------------------------------------------------------
-
-        item {
-            UsageOverviewGlassCard(
-                period = uiState.period,
-                totalUsageMillis = uiState.totalUsageMillis
-            )
-        }
-
-
-        // ---------------------------------------------------------
-        // PERIOD SELECTOR
-        // ---------------------------------------------------------
-
-        item {
-            PeriodSelector(
-                selected = uiState.period,
-                onSelected = onPeriodSelected
-            )
-        }
-
-
-        // ---------------------------------------------------------
-        // MOST USED
-        // ---------------------------------------------------------
-
-        if (uiState.mostUsed.isNotEmpty()) {
-            item {
-                MostUsedCard(
-                    apps = uiState.mostUsed
-                )
-            }
-        }
-
-
-        // ---------------------------------------------------------
-        // HIGH USAGE
-        // ---------------------------------------------------------
-
-        if (uiState.highUsageApps.isNotEmpty()) {
-            item {
-                uiState.highUsageApps?.let {
-                    HighUsageCard(
-                        apps = it,
-                        recommendations = uiState.recommendations
-                    )
-                }
-            }
-        }
-
-
-        // ---------------------------------------------------------
-        // SEARCH
-        // ---------------------------------------------------------
-
-        item {
-            OutlinedTextField(
-                value = uiState.searchQuery,
-                onValueChange = onSearchQueryChanged,
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = null
-                    )
-                },
-                placeholder = {
-                    Text("Search apps")
-                }
-            )
-        }
-
-
-        // ---------------------------------------------------------
-        // APPS HEADER
-        // ---------------------------------------------------------
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Applications",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    Text(
-                        text = "${uiState.visibleApps.size} apps",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                item {
+                    SearchApps(
+                        value = uiState.searchQuery,
+                        onValueChange = onSearchQueryChanged
                     )
                 }
 
-                SortMenu(
-                    selected = uiState.sortOption,
-                    onSelected = onSortSelected
-                )
-            }
-        }
+                // ------------------------------------------------
+                // APPLICATIONS HEADER
+                // ------------------------------------------------
 
+                item {
+                    ApplicationsHeader(
+                        count = uiState.visibleApps.size,
+                        sortOption = uiState.sortOption,
+                        onSortSelected = onSortSelected
+                    )
+                }
 
-        // ---------------------------------------------------------
-        // APP LIST
-        // ---------------------------------------------------------
+                // ------------------------------------------------
+                // APPLICATIONS
+                // ------------------------------------------------
 
-        if (uiState.visibleApps.isEmpty()) {
-            item {
-                EmptyUsageCard()
-            }
-        } else {
-            items(
-                items = uiState.visibleApps,
-                key = { it.packageName }
-            ) { app ->
+                if (uiState.visibleApps.isEmpty()) {
 
-                AppUsageItem(
-                    app = app,
-                    highlighted = uiState.highUsageApps.any {
-                        it.packageName == app.packageName
-                    },
-                    onClick = {
-                        onAppClick(app.packageName)
+                    item {
+                        EmptyAppsCard()
                     }
-                )
+
+                } else {
+
+                    items(
+                        items = uiState.visibleApps,
+                        key = {
+                            it.packageName
+                        }
+                    ) { app ->
+
+                        NewAppUsageCard(
+                            app = app,
+                            highlighted = uiState.highUsageApps.any {
+                                it.packageName == app.packageName
+                            },
+                            onClick = {
+                                onAppClick(app.packageName)
+                            }
+                        )
+                    }
+                }
             }
         }
     }
@@ -401,76 +312,236 @@ private fun UsageContent(
 
 
 // ================================================================
-// OVERVIEW CARD
+// DOTTED BACKGROUND
 // ================================================================
 
 @Composable
-private fun UsageOverviewGlassCard(
+private fun UsageDottedBackground() {
+
+    Canvas(
+        modifier = Modifier.fillMaxSize()
+    ) {
+
+        val spacing = 16.dp.toPx()
+        val radius = 1.dp.toPx()
+
+        var x = 0f
+
+        while (x < size.width) {
+
+            var y = 0f
+
+            while (y < size.height) {
+
+                drawCircle(
+                    color = LensDot.copy(alpha = 0.42f),
+                    radius = radius,
+                    center = Offset(x, y)
+                )
+
+                y += spacing
+            }
+
+            x += spacing
+        }
+    }
+}
+
+
+// ================================================================
+// DEVICE LENS HEADER
+// ================================================================
+
+@Composable
+private fun DeviceLensHeader(
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit
+) {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(92.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Icon(
+            imageVector = Icons.Outlined.Apps,
+            contentDescription = null,
+            tint = LensCyan,
+            modifier = Modifier.size(25.dp)
+        )
+
+        Spacer(
+            modifier = Modifier.width(12.dp)
+        )
+
+        Text(
+            text = "DeviceLens",
+            color = LensCyan,
+            fontSize = 27.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+
+        if (isRefreshing) {
+
+            CircularProgressIndicator(
+                modifier = Modifier.size(22.dp),
+                color = LensCyan,
+                strokeWidth = 2.dp
+            )
+
+        } else {
+
+            Icon(
+                imageVector = Icons.Outlined.Settings,
+                contentDescription = "Settings",
+                tint = LensCyan,
+                modifier = Modifier.size(27.dp)
+            )
+        }
+    }
+}
+
+
+// ================================================================
+// USAGE TITLE
+// ================================================================
+
+@Composable
+private fun UsageTitle(
+    onClick : ()  -> Unit
+) {
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = "App Usage",
+                color = LensTextPrimary,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+
+            Icon(
+                imageVector = Icons.Outlined.Refresh,
+                contentDescription = "Refresh",
+                tint = LensTextSecondary,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable{
+                        onClick()
+                    }
+            )
+        }
+
+        Spacer(
+            modifier = Modifier.height(5.dp)
+        )
+
+        Text(
+            text = "Understand how you spend time on your apps",
+            color = LensTextSecondary,
+            fontSize = 14.sp
+        )
+    }
+}
+
+
+// ================================================================
+// TOTAL SCREEN TIME
+// ================================================================
+
+@Composable
+private fun TotalScreenTimeCard(
     period: UsagePeriod,
     totalUsageMillis: Long
 ) {
-    GlassButton(
-        onClick = {},
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(155.dp)
-            .glassify(
-                style = GlassStyle.Thick
+            .clip(RoundedCornerShape(12.dp))
+            .background(LensSurface)
+            .border(
+                width = 1.dp,
+                color = LensDivider,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(
+                horizontal = 20.dp,
+                vertical = 18.dp
             )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-//                .padding(20.dp)
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(
+                        LensBlueDeep
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(15.dp))
-                        .background(
-                            MaterialTheme.colorScheme.primaryContainer
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.AccessTime,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(25.dp)
-                    )
-                }
 
-                Spacer(modifier = Modifier.width(14.dp))
-
-                Column {
-                    Text(
-                        text = "Total Screen Time",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(3.dp))
-
-                    Text(
-                        text = TimeFormatter.formatDuration(totalUsageMillis),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Outlined.AccessTime,
+                    contentDescription = null,
+                    tint = LensPurple,
+                    modifier = Modifier.size(25.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Usage for ${periodLabel(period)}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            Spacer(
+                modifier = Modifier.width(16.dp)
             )
+
+            Column {
+
+                Text(
+                    text = "TOTAL SCREEN TIME",
+                    color = LensTextSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    letterSpacing = 1.4.sp
+                )
+
+                Spacer(
+                    modifier = Modifier.height(3.dp)
+                )
+
+                Text(
+                    text = TimeFormatter.formatDuration(
+                        totalUsageMillis
+                    ),
+                    color = LensTextPrimary,
+                    fontSize = 29.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
+
+        Spacer(
+            modifier = Modifier.height(17.dp)
+        )
+
+        Text(
+            text = "Usage for ${periodLabel(period)}",
+            color = LensTextSecondary,
+            fontSize = 14.sp
+        )
     }
 }
 
@@ -484,93 +555,59 @@ private fun PeriodSelector(
     selected: UsagePeriod,
     onSelected: (UsagePeriod) -> Unit
 ) {
+
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+
         UsagePeriod.entries.forEach { period ->
 
-            FilterChip(
-                selected = selected == period,
-                onClick = {
-                    onSelected(period)
-                },
-                label = {
-                    Text(
-                        text = periodLabel(period)
+            val isSelected = selected == period
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(43.dp)
+                    .clip(
+                        RoundedCornerShape(11.dp)
                     )
-                }
-            )
-        }
-    }
-}
-
-
-// ================================================================
-// MOST USED CARD
-// ================================================================
-
-@Composable
-private fun MostUsedCard(
-    apps: List<com.example.devicelens.domain.model.AppUsageInfo>
-) {
-    GlassButton(
-        onClick = {},
-        modifier = Modifier
-            .fillMaxWidth()
-            .glassify(
-                style = GlassStyle.Thin
-            )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-
-            SectionHeader(
-                icon = Icons.Outlined.TrendingUp,
-                title = "Most Used"
-            )
-
-            apps.forEachIndexed { index, app ->
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Text(
-                        text = "${index + 1}",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.width(28.dp)
+                    .background(
+                        if (isSelected) {
+                            LensCyanDark
+                        } else {
+                            LensSurfaceAlt
+                        }
                     )
+                    .border(
+                        width = 1.dp,
+                        color = if (isSelected) {
+                            LensCyanDark
+                        } else {
+                            LensBorder
+                        },
+                        shape = RoundedCornerShape(11.dp)
+                    )
+                    .clickable {
+                        onSelected(period)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
 
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = app.packageName,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Text(
-                            text = "${"%.0f".format(app.percentOfTotal)}% of total usage",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                Text(
+                    text = periodLabel(period),
+                    color = if (isSelected) {
+                        Color.White
+                    } else {
+                        LensTextPrimary
+                    },
+                    fontSize = 13.sp,
+                    fontWeight = if (isSelected) {
+                        FontWeight.Bold
+                    } else {
+                        FontWeight.Medium
                     }
-
-                    Text(
-                        text = TimeFormatter.formatDuration(app.usageMillis),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                )
             }
         }
     }
@@ -578,152 +615,146 @@ private fun MostUsedCard(
 
 
 // ================================================================
-// HIGH USAGE CARD
+// USAGE INSIGHT
 // ================================================================
 
 @Composable
-private fun HighUsageCard(
-    apps: List<com.example.devicelens.domain.model.AppUsageInfo>,
+private fun UsageInsightCard(
     recommendations: List<String>
 ) {
-    GlassButton(
-        onClick = {},
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .glassify(
-                style = GlassStyle.Thick
+            .clip(RoundedCornerShape(11.dp))
+            .background(LensInsightBg)
+            .border(
+                width = 1.dp,
+                color = LensInsightBorder,
+                shape = RoundedCornerShape(11.dp)
             )
+            .padding(18.dp),
+        verticalAlignment = Alignment.Top
     ) {
+
+        Icon(
+            imageVector = Icons.Outlined.TipsAndUpdates,
+            contentDescription = null,
+            tint = LensBlue,
+            modifier = Modifier.size(22.dp)
+        )
+
+        Spacer(
+            modifier = Modifier.width(14.dp)
+        )
+
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier.weight(1f)
         ) {
 
-            SectionHeader(
-                icon = Icons.Outlined.TrendingUp,
-                title = "Used More Than Usual"
+            Text(
+                text = "Usage insight",
+                color = LensTextPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold
             )
 
-            apps.take(3).forEach { app ->
+            Spacer(
+                modifier = Modifier.height(6.dp)
+            )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = app.appName,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Text(
-                            text = "High usage detected",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+            recommendations
+                .take(2)
+                .forEach { recommendation ->
 
                     Text(
-                        text = TimeFormatter.formatDuration(app.usageMillis),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold
+                        text = recommendation,
+                        color = LensTextSecondary,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
                     )
                 }
-            }
-
-            if (recommendations.isNotEmpty()) {
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            MaterialTheme.colorScheme.primaryContainer.copy(
-                                alpha = 0.45f
-                            )
-                        )
-                        .padding(12.dp)
-                ) {
-
-                    Row(
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.TipsAndUpdates,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "Usage insight",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold
-                            )
-
-                            recommendations.take(2).forEach { tip ->
-                                Text(
-                                    text = tip,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }
 
 
 // ================================================================
-// SECTION HEADER
+// SEARCH
 // ================================================================
 
 @Composable
-private fun SectionHeader(
-    icon: ImageVector,
-    title: String
+private fun SearchApps(
+    value: String,
+    onValueChange: (String) -> Unit
 ) {
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = RoundedCornerShape(10.dp),
+        placeholder = {
+            Text(
+                text = "Search apps",
+                color = LensTextMuted
+            )
+        },
+        leadingIcon = {
+
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = null,
+                tint = LensTextSecondary
+            )
+        }
+    )
+}
+
+
+// ================================================================
+// APPLICATION HEADER
+// ================================================================
+
+@Composable
+private fun ApplicationsHeader(
+    count: Int,
+    sortOption: UsageSortOption,
+    onSortSelected: (UsageSortOption) -> Unit
+) {
+
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Bottom
     ) {
 
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(11.dp))
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant
-                ),
-            contentAlignment = Alignment.Center
+        Column(
+            modifier = Modifier.weight(1f)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(19.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+
+            Text(
+                text = "Applications",
+                color = LensTextPrimary,
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(
+                modifier = Modifier.height(2.dp)
+            )
+
+            Text(
+                text = "$count apps",
+                color = LensTextSecondary,
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace
             )
         }
 
-        Spacer(modifier = Modifier.width(10.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
+        SortMenu(
+            selected = sortOption,
+            onSelected = onSortSelected
         )
     }
 }
@@ -738,22 +769,28 @@ private fun SortMenu(
     selected: UsageSortOption,
     onSelected: (UsageSortOption) -> Unit
 ) {
+
     var expanded by remember {
         mutableStateOf(false)
     }
 
     Box {
 
-        TextButton(
-            onClick = {
-                expanded = true
-            }
-        ) {
-            Text(
-                text = selected.label(),
-                fontWeight = FontWeight.Medium
-            )
-        }
+        Text(
+            text = when (selected) {
+                UsageSortOption.MOST_USED -> "Most used"
+                UsageSortOption.LEAST_USED -> "Least used"
+                UsageSortOption.NAME_AZ -> "Name A–Z"
+                UsageSortOption.NAME_ZA -> "Name Z–A"
+            },
+            color = LensCyan,
+            fontSize = 13.sp,
+            modifier = Modifier
+                .clickable {
+                    expanded = true
+                }
+                .padding(8.dp)
+        )
 
         DropdownMenu(
             expanded = expanded,
@@ -761,15 +798,30 @@ private fun SortMenu(
                 expanded = false
             }
         ) {
+
             UsageSortOption.entries.forEach { option ->
 
                 DropdownMenuItem(
                     text = {
-                        Text(option.label())
+                        Text(
+                            when (option) {
+                                UsageSortOption.MOST_USED ->
+                                    "Most used"
+
+                                UsageSortOption.LEAST_USED ->
+                                    "Least used"
+
+                                UsageSortOption.NAME_AZ ->
+                                    "Name A–Z"
+
+                                UsageSortOption.NAME_ZA ->
+                                    "Name Z–A"
+                            }
+                        )
                     },
                     onClick = {
-                        onSelected(option)
                         expanded = false
+                        onSelected(option)
                     }
                 )
             }
@@ -779,45 +831,184 @@ private fun SortMenu(
 
 
 // ================================================================
-// EMPTY STATE
+// APP CARD
 // ================================================================
 
 @Composable
-private fun EmptyUsageCard() {
-    GlassButton(
-        onClick = {},
+private fun NewAppUsageCard(
+    app: AppUsageInfo,
+    highlighted: Boolean,
+    onClick: () -> Unit
+) {
+
+    val appColor = appCardColor(
+        app = app,
+        highlighted = highlighted
+    )
+
+    val iconColor = appIconColor(
+        app = app
+    )
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
-            .glassify(
-                style = GlassStyle.Thin
+            .clip(RoundedCornerShape(11.dp))
+            .background(appColor)
+            .border(
+                width = 1.dp,
+                color = if (highlighted) {
+                    LensDangerBorder
+                } else {
+                    LensSurfaceAlt
+                },
+                shape = RoundedCornerShape(11.dp)
+            )
+            .clickable {
+                onClick()
+            }
+            .padding(
+                horizontal = 20.dp,
+                vertical = 17.dp
             )
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+
+        // --------------------------------------------------------
+        // APP HEADER
+        // --------------------------------------------------------
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            AppIcon(
+                app = app,
+                tint = iconColor
+            )
+
+            Spacer(
+                modifier = Modifier.width(16.dp)
+            )
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                Text(
+                    text = app.appName,
+                    color = LensTextPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(
+                    modifier = Modifier.height(3.dp)
+                )
+
+                Text(
+                    text = app.packageName,
+                    color = LensTextSecondary,
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.width(10.dp)
+            )
+
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+
+                Text(
+                    text = TimeFormatter.formatDuration(
+                        app.usageMillis
+                    ),
+                    color = LensTextPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Spacer(
+                    modifier = Modifier.height(2.dp)
+                )
+
+                Text(
+                    text = "${app.percentOfTotal.toInt()}%",
+                    color = LensTextSecondary,
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+        }
+
+        Spacer(
+            modifier = Modifier.height(17.dp)
+        )
+
+        // --------------------------------------------------------
+        // PROGRESS
+        // --------------------------------------------------------
+
+        UsageProgressBar(
+            percent = app.percentOfTotal
+        )
+
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
+
+        // --------------------------------------------------------
+        // APP METADATA
+        // --------------------------------------------------------
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
             Icon(
-                imageVector = Icons.Outlined.Apps,
+                imageVector = Icons.Outlined.AccessTime,
                 contentDescription = null,
-                modifier = Modifier.size(28.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = LensTextSecondary,
+                modifier = Modifier.size(15.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "No app usage found",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
+            Spacer(
+                modifier = Modifier.width(5.dp)
             )
 
             Text(
-                text = "Try selecting a different period",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Last used ${formatLastUsed(app)}",
+                color = LensTextSecondary,
+                fontSize = 11.sp,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Icon(
+                imageVector = Icons.Outlined.BarChart,
+                contentDescription = null,
+                tint = LensTextSecondary,
+                modifier = Modifier.size(15.dp)
+            )
+
+            Spacer(
+                modifier = Modifier.width(5.dp)
+            )
+
+            Text(
+                text = "${app.launchCount} launches",
+                color = LensTextSecondary,
+                fontSize = 11.sp,
+                fontFamily = FontFamily.Monospace
             )
         }
     }
@@ -825,14 +1016,408 @@ private fun EmptyUsageCard() {
 
 
 // ================================================================
-// SORT LABEL
+// APP ICON
 // ================================================================
 
-private fun UsageSortOption.label(): String {
-    return when (this) {
-        UsageSortOption.MOST_USED -> "Most used"
-        UsageSortOption.LEAST_USED -> "Least used"
-        UsageSortOption.NAME_AZ -> "Name A–Z"
-        UsageSortOption.NAME_ZA -> "Name Z–A"
+@Composable
+private fun AppIcon(
+    app: AppUsageInfo,
+    tint: Color
+) {
+
+    val firstLetter = app.appName
+        .trim()
+        .firstOrNull()
+        ?.uppercase()
+        ?: "?"
+
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(
+                tint.copy(alpha = 0.18f)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Text(
+            text = firstLetter,
+            color = tint,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+
+// ================================================================
+// PROGRESS BAR
+// ================================================================
+
+@Composable
+private fun UsageProgressBar(
+    percent: Double
+) {
+
+    val progress = (
+            percent / 100.0
+            ).coerceIn(0.0, 1.0).toFloat()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(7.dp)
+            .clip(CircleShape)
+            .background(
+                LensTrack
+            )
+    ) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(progress)
+                .height(7.dp)
+                .clip(CircleShape)
+                .background(
+                    if (percent >= 50) {
+                        LensCoral
+                    } else {
+                        LensCyan
+                    }
+                )
+        )
+    }
+}
+
+
+// ================================================================
+// APP COLORS
+// ================================================================
+
+private fun appCardColor(
+    app: AppUsageInfo,
+    highlighted: Boolean
+): Color {
+
+    return when {
+
+        highlighted ->
+            LensDangerBg
+
+        app.percentOfTotal >= 10 ->
+            LensDangerBg
+
+        else ->
+            LensSurface
+    }
+}
+
+
+private fun appIconColor(
+    app: AppUsageInfo
+): Color {
+
+    return when {
+
+        app.percentOfTotal >= 50 ->
+            LensAmber
+
+        app.percentOfTotal >= 10 ->
+            LensBlue
+
+        else ->
+            LensCyan
+    }
+}
+
+
+// ================================================================
+// LAST USED
+// ================================================================
+
+private fun formatLastUsed(
+    app: AppUsageInfo
+): String {
+
+    return try {
+
+        app.lastUsedMillis?.let {
+            val formatter = java.text.SimpleDateFormat(
+                "h:mm a",
+                Locale.getDefault()
+            )
+
+            formatter.format(
+                java.util.Date(it)
+            )
+        } ?: "Unknown"
+
+    } catch (_: Exception) {
+        "Unknown"
+    }
+}
+
+
+// ================================================================
+// EMPTY
+// ================================================================
+
+@Composable
+private fun EmptyAppsCard() {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(11.dp))
+            .background(LensSurface)
+            .padding(30.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Icon(
+            imageVector = Icons.Outlined.Apps,
+            contentDescription = null,
+            tint = LensTextMuted,
+            modifier = Modifier.size(32.dp)
+        )
+
+        Spacer(
+            modifier = Modifier.height(10.dp)
+        )
+
+        Text(
+            text = "No applications found",
+            color = LensTextPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(
+            modifier = Modifier.height(5.dp)
+        )
+
+        Text(
+            text = "Try another period or search query.",
+            color = LensTextSecondary,
+            fontSize = 13.sp
+        )
+    }
+}
+
+
+// ================================================================
+// BOTTOM NAVIGATION
+// ================================================================
+
+@Composable
+private fun UsageBottomNavigation() {
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+
+            .background(
+                LensBackground
+            )
+            .border(
+                width = 1.dp,
+                color = LensBorder
+            )
+            .padding(
+                horizontal = 8.dp,
+                vertical = 10.dp
+            ),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            BottomNavigationItem(
+                icon = Icons.Outlined.Home,
+                label = "Home"
+            )
+
+            BottomNavigationItem(
+                icon = Icons.Outlined.BarChart,
+                label = "Diagnostics"
+            )
+
+            BottomNavigationItem(
+                icon = Icons.Outlined.CompareArrows,
+                label = "Compare",
+                selected = true
+            )
+
+            BottomNavigationItem(
+                icon = Icons.Outlined.Person,
+                label = "Profile"
+            )
+        }
+    }
+}
+
+
+// ================================================================
+// BOTTOM NAV ITEM
+// ================================================================
+
+@Composable
+private fun BottomNavigationItem(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean = false
+) {
+
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(25.dp))
+            .background(
+                if (selected) {
+                    LensCyanDark
+                } else {
+                    Color.Transparent
+                }
+            )
+            .padding(
+                horizontal = if (selected) 20.dp else 13.dp,
+                vertical = 7.dp
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = if (selected) {
+                Color.White
+            } else {
+                LensTextSecondary
+            },
+            modifier = Modifier.size(21.dp)
+        )
+
+        Spacer(
+            modifier = Modifier.height(4.dp)
+        )
+
+        Text(
+            text = label,
+            color = if (selected) {
+                Color.White
+            } else {
+                LensTextSecondary
+            },
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = FontFamily.Monospace
+        )
+    }
+}
+
+
+// ================================================================
+// LOADING
+// ================================================================
+
+@Composable
+private fun UsageLoading() {
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LensBackground),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            CircularProgressIndicator(
+                color = LensCyan
+            )
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
+            Text(
+                text = "Reading app usage...",
+                color = LensTextSecondary,
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+
+// ================================================================
+// ERROR
+// ================================================================
+
+@Composable
+private fun UsageError(
+    message: String,
+    onRetry: () -> Unit
+) {
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LensBackground)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Text(
+                text = "Unable to load usage",
+                color = LensTextPrimary,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Text(
+                text = message,
+                color = LensTextSecondary,
+                fontSize = 14.sp
+            )
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(LensCyanDark)
+                    .clickable {
+                        onRetry()
+                    }
+                    .padding(
+                        horizontal = 25.dp,
+                        vertical = 12.dp
+                    )
+            ) {
+
+                Text(
+                    text = "Try Again",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }

@@ -3,13 +3,20 @@ package com.example.devicelens.domain.model
 data class DeviceInfo(
     val manufacturer: String,
     val model: String,
+    val brand: String,
+    val board: String,
+    val hardware: String,
     val deviceName: String,
     val deviceType: DeviceType,
     val androidVersion: String,
+    val sdkInt: Int,
     val securityPatch: String?,
+    val buildId: String,
     val memory: MemorySnapshot,
     val storage: StorageSnapshot,
     val display: DisplayInfo,
+    val densityDpi: Int,
+    val camera: CameraInfo,
     val battery: DeviceBatterySnapshot,
     val sensors: List<DeviceSensor>
 )
@@ -31,6 +38,12 @@ data class StorageSnapshot(
     val usedBytes: Long,
     val availableBytes: Long,
     val usagePercent: Int
+)
+
+data class CameraInfo(
+    val rear: String?,
+    val front: String?,
+    val video: String?
 )
 
 data class DisplayInfo(

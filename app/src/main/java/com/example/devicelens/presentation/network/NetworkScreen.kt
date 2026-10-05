@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,1136 +13,438 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Bolt
-import androidx.compose.material.icons.outlined.NetworkCheck
-import androidx.compose.material.icons.outlined.SignalCellularAlt
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material.icons.outlined.Wifi
-import androidx.compose.material.icons.outlined.WifiTethering
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.devicelens.domain.model.ConnectionType
 import com.example.devicelens.domain.model.NetworkInfo
 import com.example.devicelens.domain.model.SignalQuality
-import io.github.sanketnawghare.glassify.compose.GlassButton
-import io.github.sanketnawghare.glassify.compose.GlassStyle
-import io.github.sanketnawghare.glassify.compose.glassify
-
+import com.example.devicelens.presentation.components.GlowProgressBar
+import com.example.devicelens.presentation.components.LensCard
+import com.example.devicelens.presentation.components.LensLoading
+import com.example.devicelens.presentation.components.clickableWithoutRipple
+import com.example.devicelens.ui.theme.LensBackground
+import com.example.devicelens.ui.theme.LensCyan
+import com.example.devicelens.ui.theme.LensGreen
+import com.example.devicelens.ui.theme.LensMint
+import com.example.devicelens.ui.theme.LensOnAccent
+import com.example.devicelens.ui.theme.LensOrange
+import com.example.devicelens.ui.theme.LensTextMuted
+import com.example.devicelens.ui.theme.LensTextPrimary
+import com.example.devicelens.ui.theme.LensTextSecondary
 
 @Composable
 fun NetworkScreen(
-    viewModel: NetworkViewModel = hiltViewModel()
+    onBack: () -> Unit = {},
+    viewModel: NetworkViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    when {
-        uiState.isLoading -> {
-            NetworkLoading()
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LensBackground)
+    ) {
+        when {
+            uiState.isLoading -> {
+                LensLoading()
+            }
 
-        uiState.error != null -> {
-            NetworkError(
-                message = uiState.error,
-                onRetry = viewModel::loadNetwork
-            )
-        }
+            uiState.error != null -> {
+                NetworkError(
+                    message = uiState.error,
+                    onRetry = viewModel::testNetwork
+                )
+            }
 
-        uiState.networkInfo != null -> {
-            uiState.networkInfo?.let {
+            else -> {
+                val info = uiState.networkInfo ?: NetworkInfo()
                 NetworkContent(
-                    info = it,
+                    info = info,
                     isTesting = uiState.isTesting,
                     onTestClick = viewModel::testNetwork
-                )
+                ){
+                    onBack()
+                }
             }
         }
     }
 }
-
-
-// ================================================================
-// CONTENT
-// ================================================================
 
 @Composable
 private fun NetworkContent(
     info: NetworkInfo,
     isTesting: Boolean,
-    onTestClick: () -> Unit
+    onTestClick: () -> Unit,
+    onBack: () -> Unit
 ) {
-
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                MaterialTheme.colorScheme.background
-            ),
-
-        contentPadding = PaddingValues(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(
             start = 20.dp,
             end = 20.dp,
-            top = 24.dp,
-            bottom = 32.dp
+            top = 4.dp,
+            bottom = 16.dp
         ),
-
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        // ---------------------------------------------------------
-        // HEADER
-        // ---------------------------------------------------------
-
         item {
-            NetworkHeader()
+            Column {
+                Text(
+                    text = "Network",
+                    color = LensTextPrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Real-time analysis of active connections and network performance.",
+                    color = LensTextSecondary,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                )
+            }
         }
-
-        // ---------------------------------------------------------
-        // CONNECTION
-        // ---------------------------------------------------------
-
+        item { WifiStatusCard(info) }
         item {
-            ConnectionCard(info)
-        }
-
-        // ---------------------------------------------------------
-        // NETWORK QUALITY
-        // ---------------------------------------------------------
-
-        item {
-            NetworkQualityCard(info)
-        }
-
-        // ---------------------------------------------------------
-        // PERFORMANCE
-        // ---------------------------------------------------------
-
-        item {
-            SpeedCard(info)
-        }
-
-        // ---------------------------------------------------------
-        // SIGNAL
-        // ---------------------------------------------------------
-
-        item {
-            SignalCard(info)
-        }
-
-        // ---------------------------------------------------------
-        // TEST BUTTON
-        // ---------------------------------------------------------
-
-        item {
-            NetworkTestButton(
+            SpeedTestCard(
+                info = info,
                 isTesting = isTesting,
-                onClick = onTestClick
-            )
-        }
-
-        // ---------------------------------------------------------
-        // INSIGHT
-        // ---------------------------------------------------------
-
-        item {
-            NetworkTroubleshooting(info)
-        }
-    }
-}
-
-
-// ================================================================
-// HEADER
-// ================================================================
-
-@Composable
-private fun NetworkHeader() {
-
-    Column {
-
-        Text(
-            text = "Network",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(
-            modifier = Modifier.height(4.dp)
-        )
-
-        Text(
-            text = "Connection, speed and network health",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-
-// ================================================================
-// CONNECTION CARD
-// ================================================================
-
-@Composable
-private fun ConnectionCard(
-    info: NetworkInfo
-) {
-
-    val icon = when (info.connectionType) {
-        ConnectionType.WIFI ->
-            Icons.Outlined.Wifi
-
-        ConnectionType.MOBILE ->
-            Icons.Outlined.SignalCellularAlt
-
-        ConnectionType.ETHERNET ->
-            Icons.Outlined.NetworkCheck
-
-        ConnectionType.VPN ->
-            Icons.Outlined.WifiTethering
-
-        else ->
-            Icons.Outlined.NetworkCheck
-    }
-
-    val connectionName = when (info.connectionType) {
-
-        ConnectionType.WIFI ->
-            info.networkName
-                ?.takeIf {
-                    it.isNotBlank() &&
-                            it != "<unknown ssid>"
-                }
-                ?: "Wi-Fi"
-
-        ConnectionType.MOBILE ->
-            "Mobile Data"
-
-        ConnectionType.ETHERNET ->
-            "Ethernet"
-
-        ConnectionType.VPN ->
-            "VPN"
-
-        ConnectionType.NONE ->
-            "No Connection"
-
-        ConnectionType.UNKNOWN ->
-            "Unknown"
-    }
-
-    GlassCard(
-        icon = icon,
-        title = "Connection",
-        subtitle = connectionName
-    ) {
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            ConnectionStatusIndicator(
-                connected = info.isInternetAvailable
-            )
-
-            Spacer(
-                modifier = Modifier.width(12.dp)
-            )
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-
-                Text(
-                    text = if (info.isInternetAvailable) {
-                        "Connected to Internet"
-                    } else {
-                        "No Internet Access"
-                    },
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Spacer(
-                    modifier = Modifier.height(3.dp)
-                )
-
-                Text(
-                    text = connectionDescription(info),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        if (!info.ipAddress.isNullOrBlank()) {
-
-            Spacer(
-                modifier = Modifier.height(18.dp)
-            )
-
-            NetworkInfoRow(
-                label = "IP Address",
-                value = info.ipAddress
+                onTestClick = onTestClick
             )
         }
     }
 }
 
-
-// ================================================================
-// CONNECTION STATUS
-// ================================================================
-
 @Composable
-private fun ConnectionStatusIndicator(
-    connected: Boolean
-) {
-
-    Box(
-        modifier = Modifier
-            .size(48.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .background(
-                if (connected) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.errorContainer
-                }
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(11.dp)
-                .clip(CircleShape)
-                .background(
-                    if (connected) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    }
-                )
-        )
-    }
-}
-
-
-// ================================================================
-// NETWORK QUALITY
-// ================================================================
-
-@Composable
-private fun NetworkQualityCard(
-    info: NetworkInfo
-) {
-
+private fun WifiStatusCard(info: NetworkInfo) {
+    val connected = info.isInternetAvailable
+    val ssid = info.networkName
+        ?.removeSurrounding("\"")
+        ?.takeIf { it.isNotBlank() && it != "<unknown ssid>" }
+        ?: when (info.connectionType) {
+            ConnectionType.WIFI -> "Wi-Fi"
+            ConnectionType.MOBILE -> "Mobile Data"
+            ConnectionType.ETHERNET -> "Ethernet"
+            ConnectionType.VPN -> "VPN"
+            else -> "—"
+        }
     val score = info.qualityScore.coerceIn(0, 100)
-
-    val quality = when {
-
-        !info.isInternetAvailable ->
-            "No Internet"
-
-        score >= 85 ->
-            "Excellent"
-
-        score >= 70 ->
-            "Good"
-
-        score >= 50 ->
-            "Fair"
-
-        else ->
-            "Poor"
+    val qualityLabel = when {
+        !connected -> "Offline"
+        score >= 85 -> "Excellent"
+        score >= 70 -> "Good"
+        score >= 50 -> "Fair"
+        else -> "Poor"
     }
-
-    GlassCard(
-        icon = Icons.Outlined.NetworkCheck,
-        title = "Network Quality",
-        subtitle = quality
-    ) {
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-
-                Text(
-                    text = "$score",
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Text(
-                    text = "out of 100",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .size(58.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-
-                Text(
-                    text = when {
-                        score >= 85 -> "✓"
-                        score >= 50 -> "~"
-                        else -> "!"
-                    },
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-        }
-
-        Spacer(
-            modifier = Modifier.height(18.dp)
-        )
-
-        LinearProgressIndicator(
-            progress = {
-                score / 100f
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .clip(CircleShape)
-        )
-
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        Text(
-            text = qualityDescription(score, info.isInternetAvailable),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+    val signalLabel = when (info.signalQuality) {
+        SignalQuality.EXCELLENT -> "Excellent"
+        SignalQuality.GOOD -> "Good"
+        SignalQuality.FAIR -> "Fair"
+        SignalQuality.POOR -> "Poor"
+        SignalQuality.UNKNOWN -> "—"
     }
-}
+    val signalProgress = info.signalDbm?.let { ((it + 100) / 50f).coerceIn(0f, 1f) } ?: 0f
+    val dbm = info.signalDbm?.let { "$it dBm" } ?: "—"
 
-
-// ================================================================
-// SPEED CARD
-// ================================================================
-
-@Composable
-private fun SpeedCard(
-    info: NetworkInfo
-) {
-
-    GlassCard(
-        icon = Icons.Outlined.Speed,
-        title = "Performance",
-        subtitle = "Network speed and latency"
-    ) {
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
-            NetworkMetric(
-                icon = Icons.Outlined.Bolt,
-                value = info.downloadMbps
-                    ?.let { "%.1f".format(it) }
-                    ?: "--",
-                unit = "Mbps",
-                label = "Download"
-            )
-
-            NetworkMetric(
-                icon = Icons.Outlined.Speed,
-                value = info.latencyMs
-                    ?.toString()
-                    ?: "--",
-                unit = "ms",
-                label = "Latency"
-            )
-
-            NetworkMetric(
-                icon = Icons.Outlined.Bolt,
-                value = info.uploadMbps
-                    ?.let { "%.1f".format(it) }
-                    ?: "--",
-                unit = "Mbps",
-                label = "Upload"
-            )
-        }
-    }
-}
-
-
-// ================================================================
-// NETWORK METRIC
-// ================================================================
-
-@Composable
-private fun NetworkMetric(
-    icon: ImageVector,
-    value: String,
-    unit: String,
-    label: String
-) {
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(11.dp))
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(19.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        Row(
-            verticalAlignment = Alignment.Bottom
-        ) {
-
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            if (value != "--") {
-
-                Spacer(
-                    modifier = Modifier.width(3.dp)
-                )
-
-                Text(
-                    text = unit,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        Spacer(
-            modifier = Modifier.height(3.dp)
-        )
-
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-
-// ================================================================
-// SIGNAL CARD
-// ================================================================
-
-@Composable
-private fun SignalCard(
-    info: NetworkInfo
-) {
-
-    val quality = when (info.signalQuality) {
-
-        SignalQuality.EXCELLENT ->
-            "Excellent"
-
-        SignalQuality.GOOD ->
-            "Good"
-
-        SignalQuality.FAIR ->
-            "Fair"
-
-        SignalQuality.POOR ->
-            "Poor"
-
-        SignalQuality.UNKNOWN ->
-            "Not available"
-    }
-
-    GlassCard(
-        icon = Icons.Outlined.SignalCellularAlt,
-        title = "Signal",
-        subtitle = quality
-    ) {
-
-        if (info.signalDbm != null) {
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-
-                    Text(
-                        text = "${info.signalDbm} dBm",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Spacer(
-                        modifier = Modifier.height(3.dp)
-                    )
-
-                    Text(
-                        text = signalDescription(
-                            info.signalDbm
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                SignalIndicator(
-                    dbm = info.signalDbm
-                )
-            }
-
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            LinearProgressIndicator(
-                progress = {
-                    signalProgress(
-                        info.signalDbm
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(CircleShape)
-            )
-
-        } else {
-
-            Text(
-                text = "Signal information is not available for this connection.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-
-// ================================================================
-// SIGNAL INDICATOR
-// ================================================================
-
-@Composable
-private fun SignalIndicator(
-    dbm: Int
-) {
-
-    val progress = signalProgress(dbm)
-
-    Box(
-        modifier = Modifier
-            .size(58.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .background(
-                MaterialTheme.colorScheme.primaryContainer
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Text(
-            text = "${(progress * 100).toInt()}%",
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    }
-}
-
-
-// ================================================================
-// TEST BUTTON
-// ================================================================
-
-@Composable
-private fun NetworkTestButton(
-    isTesting: Boolean,
-    onClick: () -> Unit
-) {
-
-    GlassButton(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(58.dp)
-            .glassify(
-                style = GlassStyle.Thick
-            )
-    ) {
-
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            if (isTesting) {
-
-                CircularProgressIndicator(
-                    modifier = Modifier.size(21.dp),
-                    strokeWidth = 2.dp
-                )
-
-                Spacer(
-                    modifier = Modifier.width(10.dp)
-                )
-
-                Text(
-                    text = "Testing network..."
-                )
-
-            } else {
-
+    LensCard {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Outlined.NetworkCheck,
-                    contentDescription = null
+                    imageVector = Icons.Outlined.Wifi,
+                    contentDescription = null,
+                    tint = LensCyan,
+                    modifier = Modifier.size(20.dp)
                 )
-
-                Spacer(
-                    modifier = Modifier.width(8.dp)
-                )
-
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Test My Network",
-                    fontWeight = FontWeight.SemiBold
+                    text = "Wi-Fi Status",
+                    color = LensTextPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f)
                 )
-            }
-        }
-    }
-}
-
-
-// ================================================================
-// TROUBLESHOOTING / INSIGHT
-// ================================================================
-
-@Composable
-private fun NetworkTroubleshooting(
-    info: NetworkInfo
-) {
-
-    val message = when {
-
-        !info.isInternetAvailable ->
-            "Your device is connected to a network, but internet access is unavailable. Try reconnecting or switching networks."
-
-        info.signalQuality == SignalQuality.POOR ->
-            "Your signal is weak. Try moving closer to your Wi-Fi router or moving to an area with better coverage."
-
-        info.latencyMs != null &&
-                info.latencyMs > 200 ->
-            "Your connection has high latency. Online gaming and video calls may be affected."
-
-        info.downloadMbps != null &&
-                info.downloadMbps < 5 ->
-            "Your download speed is low. Streaming and large downloads may be slower."
-
-        else ->
-            "Your network looks healthy. Connection quality and performance are within a good range."
-    }
-
-    GlassCard(
-        icon = if (
-            !info.isInternetAvailable ||
-            info.signalQuality == SignalQuality.POOR
-        ) {
-            Icons.Outlined.Warning
-        } else {
-            Icons.Outlined.NetworkCheck
-        },
-        title = "Network Insight",
-        subtitle = "Connection analysis"
-    ) {
-
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-
-// ================================================================
-// GLASS CARD
-// ================================================================
-
-@Composable
-private fun GlassCard(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    content: @Composable ColumnScope.() -> Unit
-) {
-
-    GlassButton(
-        onClick = {},
-        modifier = Modifier
-            .fillMaxWidth()
-            .glassify(
-                style = GlassStyle.Thick
-            )
-    ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp)
-        ) {
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
-                        .clip(RoundedCornerShape(13.dp))
-                        .background(
-                            MaterialTheme.colorScheme.primaryContainer
-                        ),
-                    contentAlignment = Alignment.Center
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(LensGreen.copy(alpha = 0.18f))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
-
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(22.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-
-                Spacer(
-                    modifier = Modifier.width(12.dp)
-                )
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-
                     Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = if (connected) "Connected" else "Offline",
+                        color = if (connected) LensGreen else LensOrange,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(
-                modifier = Modifier.height(18.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+            InfoRow("SSID", ssid)
+            InfoRow("IP Address", info.ipAddress ?: "—")
+            InfoRow(
+                "Link Speed",
+                info.downloadMbps?.let { "${it.toInt()} Mbps" } ?: "—"
             )
+            InfoRow("Security", "—")
 
-            content()
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Network Quality",
+                    color = LensTextSecondary,
+                    fontSize = 13.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "$score/100",
+                    color = LensCyan,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(LensCyan.copy(alpha = 0.16f))
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = qualityLabel,
+                        color = LensCyan,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Signal Strength ($dbm)",
+                color = LensTextSecondary,
+                fontSize = 13.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                GlowProgressBar(
+                    progress = signalProgress,
+                    colors = listOf(LensMint, LensGreen),
+                    modifier = Modifier.weight(1f),
+                    height = 10.dp
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = signalLabel,
+                    color = LensGreen,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
 
+@Composable
+private fun SpeedTestCard(
+    info: NetworkInfo,
+    isTesting: Boolean,
+    onTestClick: () -> Unit
+) {
+    LensCard {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Speed,
+                    contentDescription = null,
+                    tint = LensTextPrimary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Speed Test",
+                    color = LensTextPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f)
+                )
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(LensCyan)
+                        .clickableWithoutRipple(onClick = onTestClick)
+                        .padding(horizontal = 12.dp, vertical = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (isTesting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            strokeWidth = 2.dp,
+                            color = LensOnAccent
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = null,
+                            tint = LensOnAccent,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (isTesting) "Running" else "Run Test",
+                        color = LensOnAccent,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
 
-// ================================================================
-// NETWORK INFO ROW
-// ================================================================
+            Spacer(modifier = Modifier.height(8.dp))
+            SpeedRow(
+                accent = LensCyan,
+                icon = Icons.Outlined.ArrowDownward,
+                iconTint = LensCyan,
+                label = "Download",
+                value = info.downloadMbps?.let { "${it.toInt()} Mbps" } ?: "—"
+            )
+            SpeedRow(
+                accent = LensOrange,
+                icon = Icons.Outlined.ArrowUpward,
+                iconTint = LensOrange,
+                label = "Upload",
+                value = info.uploadMbps?.let { "${it.toInt()} Mbps" } ?: "—"
+            )
+            SpeedRow(
+                accent = LensTextPrimary,
+                icon = Icons.Outlined.SwapHoriz,
+                iconTint = LensTextPrimary,
+                label = "Latency",
+                value = info.latencyMs?.let { "$it ms" } ?: "—"
+            )
+        }
+    }
+}
 
 @Composable
-private fun NetworkInfoRow(
+private fun SpeedRow(
+    accent: Color,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: Color,
     label: String,
     value: String
 ) {
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Text(
-            text = label,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-
-// ================================================================
-// LOADING
-// ================================================================
-
-@Composable
-private fun NetworkLoading() {
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                MaterialTheme.colorScheme.background
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-
-        GlassButton(
-            onClick = {},
+    Column {
+        Box(
             modifier = Modifier
-                .size(120.dp)
-                .glassify(
-                    style = GlassStyle.Thick
-                )
+                .fillMaxWidth()
+                .height(2.dp)
+                .background(accent.copy(alpha = 0.55f))
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                CircularProgressIndicator(
-                    modifier = Modifier.size(30.dp)
-                )
-
-                Spacer(
-                    modifier = Modifier.height(10.dp)
-                )
-
-                Text(
-                    text = "Loading...",
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = label,
+                color = LensTextSecondary,
+                fontSize = 14.sp,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = value,
+                color = LensTextPrimary,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
 
-
-// ================================================================
-// ERROR
-// ================================================================
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+    ) {
+        Text(
+            text = label,
+            color = LensTextMuted,
+            fontSize = 13.sp,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = value,
+            color = LensTextPrimary,
+            fontSize = 13.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
 
 @Composable
 private fun NetworkError(
     message: String?,
     onRetry: () -> Unit
 ) {
-
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
-        contentAlignment = Alignment.Center
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-
-        GlassButton(
-            onClick = {},
+        Icon(
+            imageVector = Icons.Outlined.Warning,
+            contentDescription = null,
+            tint = LensOrange,
+            modifier = Modifier.size(40.dp)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text("Unable to load network", color = LensTextPrimary, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(message ?: "Something went wrong", color = LensTextSecondary)
+        Spacer(modifier = Modifier.height(16.dp))
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .glassify(
-                    style = GlassStyle.Thick
-                )
+                .clip(RoundedCornerShape(12.dp))
+                .background(LensCyan)
+                .clickableWithoutRipple(onRetry)
+                .padding(horizontal = 18.dp, vertical = 10.dp)
         ) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Icon(
-                    imageVector = Icons.Outlined.Warning,
-                    contentDescription = null,
-                    modifier = Modifier.size(42.dp),
-                    tint = MaterialTheme.colorScheme.error
-                )
-
-                Spacer(
-                    modifier = Modifier.height(12.dp)
-                )
-
-                Text(
-                    text = "Unable to load network",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(
-                    modifier = Modifier.height(6.dp)
-                )
-
-                Text(
-                    text = message ?: "Something went wrong",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(
-                    modifier = Modifier.height(18.dp)
-                )
-
-                Button(
-                    onClick = onRetry
-                ) {
-                    Text("Try Again")
-                }
-            }
+            Text("Try Again", color = LensOnAccent, fontWeight = FontWeight.Bold)
         }
-    }
-}
-
-
-// ================================================================
-// HELPERS
-// ================================================================
-
-private fun connectionDescription(
-    info: NetworkInfo
-): String {
-
-    return when {
-
-        !info.isInternetAvailable ->
-            "Network connected, internet unavailable"
-
-        info.connectionType == ConnectionType.WIFI ->
-            "Connected through Wi-Fi"
-
-        info.connectionType == ConnectionType.MOBILE ->
-            "Connected through mobile data"
-
-        info.connectionType == ConnectionType.ETHERNET ->
-            "Connected through Ethernet"
-
-        else ->
-            "Internet connection available"
-    }
-}
-
-
-private fun qualityDescription(
-    score: Int,
-    internetAvailable: Boolean
-): String {
-
-    if (!internetAvailable) {
-        return "Internet access is currently unavailable"
-    }
-
-    return when {
-
-        score >= 85 ->
-            "Your connection is performing excellently"
-
-        score >= 70 ->
-            "Your connection is performing well"
-
-        score >= 50 ->
-            "Your connection is acceptable"
-
-        else ->
-            "Your connection may need attention"
-    }
-}
-
-
-private fun signalProgress(
-    dbm: Int
-): Float {
-    return ((dbm + 100) / 50f)
-        .coerceIn(0f, 1f)
-}
-
-
-private fun signalDescription(
-    dbm: Int
-): String {
-
-    return when {
-
-        dbm >= -50 ->
-            "Very strong signal"
-
-        dbm >= -60 ->
-            "Strong signal"
-
-        dbm >= -70 ->
-            "Good signal"
-
-        dbm >= -85 ->
-            "Weak signal"
-
-        else ->
-            "Very weak signal"
     }
 }
