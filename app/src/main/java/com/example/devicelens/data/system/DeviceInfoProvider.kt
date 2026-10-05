@@ -6,12 +6,17 @@ import android.content.res.Configuration
 import android.graphics.Point
 import android.hardware.Sensor
 import android.hardware.SensorManager
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.provider.Settings
+import android.util.Size
 import android.view.WindowManager
 import com.example.devicelens.domain.model.BatteryStatus
+import com.example.devicelens.domain.model.CameraInfo
 import com.example.devicelens.domain.model.DeviceBatterySnapshot
 import com.example.devicelens.domain.model.DeviceInfo
 import com.example.devicelens.domain.model.DeviceSensor
@@ -34,13 +39,20 @@ class DeviceInfoProvider @Inject constructor(
         return DeviceInfo(
             manufacturer = manufacturer.ifBlank { "Not available" },
             model = model,
+            brand = Build.BRAND.replaceFirstChar { it.uppercase() }.ifBlank { manufacturer },
+            board = Build.BOARD.ifBlank { "Not available" },
+            hardware = Build.HARDWARE.ifBlank { "Not available" },
             deviceName = getDeviceName().ifBlank { model },
             deviceType = getDeviceType(),
             androidVersion = Build.VERSION.RELEASE.ifBlank { "Not available" },
+            sdkInt = Build.VERSION.SDK_INT,
             securityPatch = Build.VERSION.SECURITY_PATCH.takeIf { it.isNotBlank() },
+            buildId = Build.DISPLAY.ifBlank { Build.ID }.ifBlank { "Not available" },
             memory = getMemory(),
             storage = getStorage(),
             display = getDisplay(),
+            densityDpi = context.resources.displayMetrics.densityDpi,
+            camera = getCamera(),
             battery = getBatterySnapshot(),
             sensors = getSensors()
         )
@@ -157,6 +169,63 @@ class DeviceInfoProvider @Inject constructor(
             temperatureC = battery.temperature,
             capacityMah = capacity
         )
+    }
+
+    private fun getCamera(): CameraInfo {
+        val manager = context.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
+            ?: return CameraInfo(null, null, null)
+
+        var rearMp = 0f
+        var frontMp = 0f
+        var bestVideo: Size? = null
+
+        val ids = runCatching { manager.cameraIdList }.getOrDefault(emptyArray())
+        for (id in ids) {
+            val characteristics = runCatching { manager.getCameraCharacteristics(id) }.getOrNull()
+                ?: continue
+            val pixels = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE)
+            val megapixels = pixels?.let { it.width.toFloat() * it.height / 1_000_000f } ?: 0f
+            when (characteristics.get(CameraCharacteristics.LENS_FACING)) {
+                CameraCharacteristics.LENS_FACING_BACK -> if (megapixels > rearMp) rearMp = megapixels
+                CameraCharacteristics.LENS_FACING_FRONT -> if (megapixels > frontMp) frontMp = megapixels
+            }
+            val sizes = characteristics
+                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                ?.getOutputSizes(MediaRecorder::class.java)
+                .orEmpty()
+            val largest = sizes.maxByOrNull { it.width.toLong() * it.height } ?: continue
+            val current = bestVideo
+            if (current == null || largest.width.toLong() * largest.height > current.width.toLong() * current.height) {
+                bestVideo = largest
+            }
+        }
+
+        return CameraInfo(
+            rear = rearMp.takeIf { it > 0f }?.let(::formatMegapixels),
+            front = frontMp.takeIf { it > 0f }?.let(::formatMegapixels),
+            video = bestVideo?.let(::formatVideo)
+        )
+    }
+
+    private fun formatMegapixels(megapixels: Float): String {
+        val rounded = if (megapixels >= 10f) {
+            "%.0f".format(megapixels)
+        } else {
+            "%.1f".format(megapixels)
+        }
+        return "$rounded MP"
+    }
+
+    private fun formatVideo(size: Size): String {
+        val shortSide = minOf(size.width, size.height)
+        val label = when {
+            shortSide >= 2160 -> "4K"
+            shortSide >= 1440 -> "1440p"
+            shortSide >= 1080 -> "1080p"
+            shortSide >= 720 -> "720p"
+            else -> return "${size.width} × ${size.height}"
+        }
+        return "$label (${size.width} × ${size.height})"
     }
 
     private fun getSensors(): List<DeviceSensor> {

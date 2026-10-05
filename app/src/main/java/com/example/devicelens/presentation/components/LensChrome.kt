@@ -57,12 +57,14 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.devicelens.ui.theme.LensBackground
 import com.example.devicelens.ui.theme.LensBorder
 import com.example.devicelens.ui.theme.LensCyan
+import com.example.devicelens.ui.theme.LensGaugeTrack
 import com.example.devicelens.ui.theme.LensGreen
 import com.example.devicelens.ui.theme.LensMint
 import com.example.devicelens.ui.theme.LensPurple
@@ -71,6 +73,7 @@ import com.example.devicelens.ui.theme.LensTextMuted
 import com.example.devicelens.ui.theme.LensTextPrimary
 import com.example.devicelens.ui.theme.LensTextSecondary
 import com.example.devicelens.ui.theme.LensTrack
+import com.example.devicelens.ui.theme.LensType
 
 enum class LensTab {
     Diagnostics,
@@ -110,7 +113,7 @@ fun LensTopBar(
     showBack: Boolean = false,
     onBack: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
-    modifier : Modifier
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -171,14 +174,20 @@ fun LensTopBar(
 @Composable
 fun LensCard(
     modifier: Modifier = Modifier,
+    cornerRadius: Dp = 18.dp,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    background: Color = LensSurface,
+    border: Color = LensBorder,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val shape = RoundedCornerShape(cornerRadius)
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(LensSurface)
-            .border(1.dp, LensBorder, RoundedCornerShape(18.dp)),
+            .clip(shape)
+            .background(background)
+            .border(1.dp, border, shape)
+            .padding(contentPadding),
         content = content
     )
 }
@@ -282,7 +291,7 @@ fun HealthGauge(
             val innerSize = Size(size.width - innerPad * 2, size.height - innerPad * 2)
             val innerOrigin = Offset(innerPad, innerPad)
             drawArc(
-                color = Color(0xFF16352C),
+                color = LensGaugeTrack,
                 startAngle = start,
                 sweepAngle = sweepMax,
                 useCenter = false,
@@ -316,15 +325,12 @@ fun HealthGauge(
             Text(
                 text = score.toString(),
                 color = LensTextPrimary,
-                fontSize = 52.sp,
-                fontWeight = FontWeight.Bold
+                style = LensType.gauge
             )
             Text(
                 text = label.uppercase(),
                 color = LensCyan,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
+                style = LensType.status
             )
         }
     }
@@ -407,8 +413,7 @@ private fun LensNavItem(
         Text(
             text = tab.name,
             color = tint,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.SemiBold
+            style = LensType.nav
         )
     }
 }

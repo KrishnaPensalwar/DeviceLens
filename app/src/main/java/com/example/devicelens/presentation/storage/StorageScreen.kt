@@ -48,20 +48,24 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.devicelens.domain.model.StorageSortOption
 import com.example.devicelens.domain.model.StorageThreshold
-import com.example.devicelens.presentation.device.DeviceInfoTopBar
+import com.example.devicelens.presentation.components.LensBackBar
+import com.example.devicelens.presentation.components.LensCard
+import com.example.devicelens.presentation.components.LensLoading
+import com.example.devicelens.ui.theme.LensAmber
+import com.example.devicelens.ui.theme.LensAmberDark
+import com.example.devicelens.ui.theme.LensBackground
+import com.example.devicelens.ui.theme.LensBorder
+import com.example.devicelens.ui.theme.LensCyan
+import com.example.devicelens.ui.theme.LensCyanDark
+import com.example.devicelens.ui.theme.LensSurface
+import com.example.devicelens.ui.theme.LensTextMuted
+import com.example.devicelens.ui.theme.LensTextPrimary
+import com.example.devicelens.ui.theme.LensTextSecondary
+import com.example.devicelens.ui.theme.LensTrack
 import com.example.devicelens.presentation.storage.components.AppStorageItem
 import com.example.devicelens.presentation.storage.components.StorageBreakdown
 import com.example.devicelens.presentation.storage.components.StorageOverviewCard
 import com.example.devicelens.presentation.storage.components.StorageSortMenu
-import com.example.devicelens.themes.DeviceLensAmber
-import com.example.devicelens.themes.DeviceLensBackground
-import com.example.devicelens.themes.DeviceLensBorder
-import com.example.devicelens.themes.DeviceLensCard
-import com.example.devicelens.themes.DeviceLensCyan
-import com.example.devicelens.themes.DeviceLensCyanDark
-import com.example.devicelens.themes.DeviceLensTextMuted
-import com.example.devicelens.themes.DeviceLensTextPrimary
-import com.example.devicelens.themes.DeviceLensTextSecondary
 
 // ============================================================================
 // MAIN SCREEN
@@ -78,7 +82,7 @@ fun StorageScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeviceLensBackground)
+            .background(LensBackground)
     ) {
 
         when {
@@ -127,7 +131,7 @@ private fun StorageContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeviceLensBackground),
+            .background(LensBackground),
 
         contentPadding = PaddingValues(
             start = 18.dp,
@@ -142,16 +146,6 @@ private fun StorageContent(
         // ====================================================================
         // HEADER
         // ====================================================================
-
-        item {
-
-            DeviceInfoTopBar (
-                title = "Storage"
-            ){
-                onBack()
-            }
-        }
-
 
         // ====================================================================
         // STORAGE OVERVIEW
@@ -258,7 +252,7 @@ private fun StorageHeader(
 
             Text(
                 text = "Storage",
-                color = DeviceLensTextPrimary,
+                color = LensTextPrimary,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -269,7 +263,7 @@ private fun StorageHeader(
 
             Text(
                 text = "See what's using your device space",
-                color = DeviceLensTextSecondary,
+                color = LensTextSecondary,
                 fontSize = 14.sp
             )
         }
@@ -300,10 +294,10 @@ private fun RefreshButton(
         modifier = Modifier
             .size(40.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(DeviceLensCard)
+            .background(LensSurface)
             .border(
                 width = 1.dp,
-                color = DeviceLensBorder,
+                color = LensBorder,
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable {
@@ -319,7 +313,7 @@ private fun RefreshButton(
             CircularProgressIndicator(
                 modifier = Modifier.size(19.dp),
                 strokeWidth = 2.dp,
-                color = DeviceLensCyan
+                color = LensCyan
             )
 
         } else {
@@ -327,7 +321,7 @@ private fun RefreshButton(
             Icon(
                 imageVector = Icons.Outlined.Refresh,
                 contentDescription = "Refresh storage",
-                tint = DeviceLensTextSecondary,
+                tint = LensTextSecondary,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -344,7 +338,7 @@ private fun StorageBreakdownCard(
     overview: com.example.devicelens.domain.model.StorageOverview
 ) {
 
-    DeviceLensCard {
+    LensCard {
 
         Column(
             modifier = Modifier.padding(
@@ -355,7 +349,7 @@ private fun StorageBreakdownCard(
 
             Text(
                 text = "Storage Breakdown",
-                color = DeviceLensTextPrimary,
+                color = LensTextPrimary,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -392,12 +386,12 @@ private fun HighStorageCard(
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = Color(0xFF76580F),
+                color = LensAmber,
                 shape = RoundedCornerShape(14.dp)
             ),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF211F18)
+            containerColor = LensAmberDark
         )
     ) {
 
@@ -417,14 +411,14 @@ private fun HighStorageCard(
                     modifier = Modifier
                         .size(50.dp)
                         .clip(RoundedCornerShape(9.dp))
-                        .background(Color(0xFF4A3610)),
+                        .background(LensAmberDark),
                     contentAlignment = Alignment.Center
                 ) {
 
                     Icon(
                         imageVector = Icons.Outlined.Warning,
                         contentDescription = null,
-                        tint = DeviceLensAmber,
+                        tint = LensAmber,
                         modifier = Modifier.size(25.dp)
                     )
                 }
@@ -437,7 +431,7 @@ private fun HighStorageCard(
 
                     Text(
                         text = "High Storage Usage",
-                        color = DeviceLensAmber,
+                        color = LensAmber,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -452,7 +446,7 @@ private fun HighStorageCard(
                         } else {
                             "$appsCount apps need attention"
                         },
-                        color = DeviceLensTextSecondary,
+                        color = LensTextSecondary,
                         fontSize = 14.sp
                     )
                 }
@@ -474,7 +468,7 @@ private fun HighStorageCard(
                 } else {
                     "$appsCount applications are using more than ${threshold.label}."
                 },
-                color = DeviceLensTextPrimary,
+                color = LensTextPrimary,
                 fontSize = 14.sp
             )
 
@@ -494,7 +488,7 @@ private fun HighStorageCard(
                     text = "ALERT AT ${threshold.label}",
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF303735))
+                        .background(LensTrack)
                         .clickable {
                             expanded = true
                         }
@@ -502,7 +496,7 @@ private fun HighStorageCard(
                             horizontal = 16.dp,
                             vertical = 11.dp
                         ),
-                    color = DeviceLensCyan,
+                    color = LensCyan,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -562,7 +556,7 @@ private fun ApplicationsHeader(
 
             Text(
                 text = "Applications",
-                color = DeviceLensTextPrimary,
+                color = LensTextPrimary,
                 fontSize = 25.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -573,7 +567,7 @@ private fun ApplicationsHeader(
 
             Text(
                 text = "$count apps",
-                color = DeviceLensTextSecondary,
+                color = LensTextSecondary,
                 fontSize = 13.sp
             )
         }
@@ -593,7 +587,7 @@ private fun ApplicationsHeader(
 @Composable
 private fun EmptyApplicationsCard() {
 
-    DeviceLensCard {
+    LensCard {
 
         Column(
             modifier = Modifier
@@ -606,7 +600,7 @@ private fun EmptyApplicationsCard() {
                 imageVector = Icons.Outlined.Storage,
                 contentDescription = null,
                 modifier = Modifier.size(34.dp),
-                tint = DeviceLensTextMuted
+                tint = LensTextMuted
             )
 
             Spacer(
@@ -615,7 +609,7 @@ private fun EmptyApplicationsCard() {
 
             Text(
                 text = "No applications found",
-                color = DeviceLensTextPrimary,
+                color = LensTextPrimary,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -626,7 +620,7 @@ private fun EmptyApplicationsCard() {
 
             Text(
                 text = "There are no application storage details to display.",
-                color = DeviceLensTextSecondary,
+                color = LensTextSecondary,
                 fontSize = 13.sp
             )
         }
@@ -640,34 +634,7 @@ private fun EmptyApplicationsCard() {
 
 @Composable
 private fun StorageLoading() {
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DeviceLensBackground),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            CircularProgressIndicator(
-                color = DeviceLensCyan,
-                strokeWidth = 3.dp
-            )
-
-            Spacer(
-                modifier = Modifier.height(14.dp)
-            )
-
-            Text(
-                text = "Analyzing storage...",
-                color = DeviceLensTextSecondary,
-                fontSize = 14.sp
-            )
-        }
-    }
+    LensLoading(message = "Analyzing storage...")
 }
 
 
@@ -684,12 +651,12 @@ private fun StorageError(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeviceLensBackground)
+            .background(LensBackground)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
 
-        DeviceLensCard {
+        LensCard {
 
             Column(
                 modifier = Modifier
@@ -701,7 +668,7 @@ private fun StorageError(
                 Icon(
                     imageVector = Icons.Outlined.Warning,
                     contentDescription = null,
-                    tint = DeviceLensAmber,
+                    tint = LensAmber,
                     modifier = Modifier.size(34.dp)
                 )
 
@@ -711,7 +678,7 @@ private fun StorageError(
 
                 Text(
                     text = "Unable to analyze storage",
-                    color = DeviceLensTextPrimary,
+                    color = LensTextPrimary,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -722,7 +689,7 @@ private fun StorageError(
 
                 Text(
                     text = message,
-                    color = DeviceLensTextSecondary,
+                    color = LensTextSecondary,
                     fontSize = 13.sp
                 )
 
@@ -734,7 +701,7 @@ private fun StorageError(
                     text = "TAP TO TRY AGAIN",
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(DeviceLensCyanDark)
+                        .background(LensCyanDark)
                         .clickable {
                             onRetry()
                         }
@@ -742,7 +709,7 @@ private fun StorageError(
                             horizontal = 16.dp,
                             vertical = 10.dp
                         ),
-                    color = DeviceLensCyan,
+                    color = LensCyan,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
@@ -751,30 +718,4 @@ private fun StorageError(
             }
         }
     }
-}
-
-
-// ============================================================================
-// REUSABLE DEVICE LENS CARD
-// ============================================================================
-
-@Composable
-private fun DeviceLensCard(
-    content: @Composable ColumnScope.() -> Unit
-) {
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = DeviceLensBorder,
-                shape = RoundedCornerShape(18.dp)
-            ),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = DeviceLensCard
-        ),
-        content = content
-    )
 }

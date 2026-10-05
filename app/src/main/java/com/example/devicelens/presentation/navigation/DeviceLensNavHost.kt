@@ -50,24 +50,19 @@ fun DeviceLensNavHost(
                 onUsageClick = {
                     navController.navigate(Routes.Usage.route)
                 },
-                onTabSelected = { tab -> navController.navigateTab(tab) }
             )
         }
 
         composable(
             route = Routes.Device.route
         ) {
-            DeviceInfoScreen{
-                navController.popBackStack()
-            }
+            DeviceInfoScreen()
         }
 
         composable(
             route = Routes.Battery.route
         ) {
-            BatteryScreen{
-                navController.popBackStack()
-            }
+            BatteryScreen()
         }
 
         composable(
@@ -89,9 +84,7 @@ fun DeviceLensNavHost(
         composable(
             route = Routes.Health.route
         ) {
-            HealthScreen{
-                navController.popBackStack()
-            }
+            HealthScreen()
         }
 
         composable(

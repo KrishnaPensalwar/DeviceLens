@@ -42,8 +42,9 @@ import com.example.devicelens.domain.model.NetworkInfo
 import com.example.devicelens.domain.model.SignalQuality
 import com.example.devicelens.presentation.components.GlowProgressBar
 import com.example.devicelens.presentation.components.LensCard
+import com.example.devicelens.presentation.components.LensLoading
 import com.example.devicelens.presentation.components.clickableWithoutRipple
-import com.example.devicelens.presentation.device.DeviceInfoTopBar
+import com.example.devicelens.ui.theme.LensBackground
 import com.example.devicelens.ui.theme.LensCyan
 import com.example.devicelens.ui.theme.LensGreen
 import com.example.devicelens.ui.theme.LensMint
@@ -61,13 +62,13 @@ fun NetworkScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
-
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LensBackground)
     ) {
         when {
             uiState.isLoading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = LensCyan)
-                }
+                LensLoading()
             }
 
             uiState.error != null -> {
@@ -111,11 +112,13 @@ private fun NetworkContent(
 
         item {
             Column {
-                DeviceInfoTopBar(title = "Network Diagnostics"){
-                    onBack()
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Network",
+                    color = LensTextPrimary,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Real-time analysis of active connections and network performance.",
                     color = LensTextSecondary,

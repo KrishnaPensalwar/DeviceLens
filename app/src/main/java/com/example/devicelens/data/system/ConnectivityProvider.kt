@@ -12,6 +12,7 @@ import com.example.devicelens.domain.model.calculateNetworkHealth
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
 import java.net.Inet4Address
 import java.net.InetSocketAddress
 import java.net.NetworkInterface
@@ -48,6 +49,7 @@ class ConnectivityProvider @Inject constructor(
 
         val latencyMs = measureLatencyMs()
         val downloadMbps = measureDownloadMbps()
+        val uploadMbps = measureUploadMbps()
         val health = calculateNetworkHealth(
             internetAvailable = true,
             signalQuality = snapshot.signalQuality,
@@ -57,6 +59,7 @@ class ConnectivityProvider @Inject constructor(
 
         snapshot.copy(
             downloadMbps = downloadMbps,
+            uploadMbps = uploadMbps,
             latencyMs = latencyMs,
             qualityScore = health.score
         )
@@ -185,6 +188,27 @@ class ConnectivityProvider @Inject constructor(
             val elapsedSeconds = (System.nanoTime() - start) / 1_000_000_000.0
             if (elapsedSeconds <= 0.0 || bytes <= 0) null
             else (bytes * 8.0) / elapsedSeconds / 1_000_000.0
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun measureUploadMbps(): Double? {
+        return try {
+            val payload = ByteArray(200_000)
+            val connection = URL("https://speed.cloudflare.com/__up").openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.connectTimeout = 5_000
+            connection.readTimeout = 8_000
+            connection.setFixedLengthStreamingMode(payload.size)
+            val start = System.nanoTime()
+            connection.outputStream.use { it.write(payload) }
+            connection.responseCode
+            val elapsedSeconds = (System.nanoTime() - start) / 1_000_000_000.0
+            connection.disconnect()
+            if (elapsedSeconds <= 0.0) null
+            else (payload.size * 8.0) / elapsedSeconds / 1_000_000.0
         } catch (_: Exception) {
             null
         }

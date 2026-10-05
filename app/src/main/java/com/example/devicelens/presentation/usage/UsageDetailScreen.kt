@@ -52,30 +52,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.devicelens.ui.theme.LensBackground
+import com.example.devicelens.ui.theme.LensBlue
+import com.example.devicelens.ui.theme.LensBlueDeep
+import com.example.devicelens.ui.theme.LensBorder
+import com.example.devicelens.ui.theme.LensCyan
+import com.example.devicelens.ui.theme.LensCyanDark
+import com.example.devicelens.ui.theme.LensPurple
+import com.example.devicelens.ui.theme.LensSurface
+import com.example.devicelens.ui.theme.LensSurfaceAlt
+import com.example.devicelens.ui.theme.LensTextMuted
+import com.example.devicelens.ui.theme.LensTextPrimary
+import com.example.devicelens.ui.theme.LensTextSecondary
+import com.example.devicelens.ui.theme.LensTrack
+import com.example.devicelens.ui.theme.LensType
 import com.example.devicelens.core.util.TimeFormatter
 import com.example.devicelens.domain.model.AppUsageDetail
 import com.example.devicelens.domain.model.UsagePeriod
 import com.example.devicelens.presentation.usage.components.UsageChart
 import com.example.devicelens.presentation.usage.components.periodLabel
-
-// ================================================================
-// DEVICE LENS COLORS
-// ================================================================
-
-private val DeviceBackground = Color(0xFF0D1111)
-private val DeviceCard = Color(0xFF171C1C)
-private val DeviceCardLight = Color(0xFF1D2323)
-private val DeviceBorder = Color(0xFF303838)
-
-private val DeviceCyan = Color(0xFF6BDAD8)
-private val DeviceCyanDark = Color(0xFF008F8F)
-
-private val DeviceBlue = Color(0xFF9BAEFF)
-
-private val DeviceText = Color(0xFFE3E8E8)
-private val DeviceTextSecondary = Color(0xFFB8C1C1)
-private val DeviceTextMuted = Color(0xFF7F8A8A)
-
 
 // ================================================================
 // MAIN SCREEN
@@ -121,7 +116,7 @@ private fun UsageDetailLoading() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeviceBackground),
+            .background(LensBackground),
         contentAlignment = Alignment.Center
     ) {
 
@@ -130,7 +125,7 @@ private fun UsageDetailLoading() {
         ) {
 
             CircularProgressIndicator(
-                color = DeviceCyan
+                color = LensCyan
             )
 
             Spacer(
@@ -139,7 +134,7 @@ private fun UsageDetailLoading() {
 
             Text(
                 text = "Loading usage details...",
-                color = DeviceTextSecondary,
+                color = LensTextSecondary,
                 fontSize = 14.sp
             )
         }
@@ -160,7 +155,7 @@ private fun UsageDetailError(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeviceBackground)
+            .background(LensBackground)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -173,7 +168,7 @@ private fun UsageDetailError(
                 imageVector = Icons.Outlined.QueryStats,
                 contentDescription = null,
                 modifier = Modifier.size(44.dp),
-                tint = DeviceCyan
+                tint = LensCyan
             )
 
             Spacer(
@@ -182,7 +177,7 @@ private fun UsageDetailError(
 
             Text(
                 text = "Unable to load usage",
-                color = DeviceText,
+                color = LensTextPrimary,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -193,7 +188,7 @@ private fun UsageDetailError(
 
             Text(
                 text = message,
-                color = DeviceTextSecondary,
+                color = LensTextSecondary,
                 fontSize = 14.sp
             )
 
@@ -227,7 +222,7 @@ private fun UsageDetailContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeviceBackground),
+            .background(LensBackground),
 
         contentPadding = PaddingValues(
             start = 16.dp,
@@ -244,9 +239,17 @@ private fun UsageDetailContent(
         // ========================================================
 
         item {
-
-            DeviceLensTopBar(
-                onBack = onBack
+            Text(
+                text = detail.app.appName,
+                color = LensTextPrimary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = detail.app.packageName,
+                color = LensTextSecondary,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 2.dp)
             )
         }
 
@@ -368,7 +371,7 @@ private fun DeviceLensTopBar(
             Icon(
                 imageVector = Icons.Outlined.ArrowBack,
                 contentDescription = "Back",
-                tint = DeviceCyan,
+                tint = LensCyan,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -380,7 +383,7 @@ private fun DeviceLensTopBar(
 
             Text(
                 text = "DeviceLens",
-                color = DeviceCyan,
+                color = LensCyan,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -394,7 +397,7 @@ private fun DeviceLensTopBar(
             Icon(
                 imageVector = Icons.Outlined.Settings,
                 contentDescription = "Settings",
-                tint = DeviceTextSecondary,
+                tint = LensTextSecondary,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -416,10 +419,10 @@ private fun AppIdentityCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(22.dp))
-            .background(DeviceCardLight)
+            .background(LensSurfaceAlt)
             .border(
                 width = 1.dp,
-                color = DeviceBorder,
+                color = LensBorder,
                 shape = RoundedCornerShape(22.dp)
             )
             .padding(
@@ -437,7 +440,7 @@ private fun AppIdentityCard(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(17.dp))
-                .background(DeviceBackground),
+                .background(LensBackground),
             contentAlignment = Alignment.Center
         ) {
 
@@ -445,7 +448,7 @@ private fun AppIdentityCard(
                 imageVector = Icons.Outlined.Apps,
                 contentDescription = null,
                 modifier = Modifier.size(34.dp),
-                tint = DeviceCyan
+                tint = LensCyan
             )
         }
 
@@ -463,7 +466,7 @@ private fun AppIdentityCard(
 
             Text(
                 text = appName,
-                color = DeviceText,
+                color = LensTextPrimary,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -476,7 +479,7 @@ private fun AppIdentityCard(
 
             Text(
                 text = packageName,
-                color = DeviceTextSecondary,
+                color = LensTextSecondary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontFamily = FontFamily.Monospace,
@@ -514,17 +517,17 @@ private fun UsagePeriodSelector(
                     .clip(RoundedCornerShape(20.dp))
                     .background(
                         if (isSelected) {
-                            DeviceCyanDark
+                            LensCyanDark
                         } else {
-                            DeviceCardLight
+                            LensSurfaceAlt
                         }
                     )
                     .border(
                         width = 1.dp,
                         color = if (isSelected) {
-                            DeviceCyanDark
+                            LensCyanDark
                         } else {
-                            DeviceBorder
+                            LensBorder
                         },
                         shape = RoundedCornerShape(20.dp)
                     )
@@ -539,7 +542,7 @@ private fun UsagePeriodSelector(
                     color = if (isSelected) {
                         Color.White
                     } else {
-                        DeviceTextSecondary
+                        LensTextSecondary
                     },
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
@@ -567,10 +570,10 @@ private fun UsageSummaryCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(DeviceCard)
+            .background(LensSurface)
             .border(
                 width = 1.dp,
-                color = DeviceBorder,
+                color = LensBorder,
                 shape = RoundedCornerShape(24.dp)
             )
             .padding(22.dp)
@@ -604,7 +607,7 @@ private fun UsageSummaryCard(
 
                 Text(
                     text = "TOTAL USAGE",
-                    color = DeviceTextSecondary,
+                    color = LensTextSecondary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace,
@@ -619,7 +622,7 @@ private fun UsageSummaryCard(
                     text = TimeFormatter.formatDuration(
                         detail.app.usageMillis
                     ),
-                    color = DeviceCyan,
+                    color = LensCyan,
                     fontSize = 58.sp,
                     lineHeight = 58.sp,
                     fontWeight = FontWeight.Bold
@@ -634,14 +637,14 @@ private fun UsageSummaryCard(
                     text = "%.0f%%".format(
                         percentage
                     ),
-                    color = DeviceBlue,
+                    color = LensBlue,
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
                     text = "of total\nusage",
-                    color = DeviceTextSecondary,
+                    color = LensTextSecondary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace
@@ -665,8 +668,8 @@ private fun UsageSummaryCard(
                 .fillMaxWidth()
                 .height(8.dp)
                 .clip(CircleShape),
-            color = DeviceCyan,
-            trackColor = Color(0xFF081010)
+            color = LensCyan,
+            trackColor = LensBackground
         )
 
         Spacer(
@@ -721,10 +724,10 @@ private fun DetailMetricCard(
         modifier = modifier
             .heightIn(min = 78.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(DeviceCardLight)
+            .background(LensSurfaceAlt)
             .border(
                 width = 1.dp,
-                color = DeviceBorder,
+                color = LensBorder,
                 shape = RoundedCornerShape(14.dp)
             )
             .padding(13.dp)
@@ -738,7 +741,7 @@ private fun DetailMetricCard(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(15.dp),
-                tint = DeviceTextSecondary
+                tint = LensTextSecondary
             )
 
             Spacer(
@@ -747,7 +750,7 @@ private fun DetailMetricCard(
 
             Text(
                 text = label,
-                color = DeviceTextSecondary,
+                color = LensTextSecondary,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace
@@ -760,7 +763,7 @@ private fun DetailMetricCard(
 
         Text(
             text = value,
-            color = DeviceText,
+            color = LensTextPrimary,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -781,10 +784,10 @@ private fun UsageBreakdownCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(DeviceCard)
+            .background(LensSurface)
             .border(
                 width = 1.dp,
-                color = DeviceBorder,
+                color = LensBorder,
                 shape = RoundedCornerShape(24.dp)
             )
             .padding(
@@ -834,7 +837,7 @@ private fun SectionTitle(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(21.dp),
-            tint = DeviceTextSecondary
+            tint = LensTextSecondary
         )
 
         Spacer(
@@ -843,7 +846,7 @@ private fun SectionTitle(
 
         Text(
             text = title,
-            color = DeviceTextSecondary,
+            color = LensTextSecondary,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
@@ -872,7 +875,7 @@ private fun TimelineHeader() {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF29499F)),
+                .background(LensBlueDeep),
             contentAlignment = Alignment.Center
         ) {
 
@@ -880,7 +883,7 @@ private fun TimelineHeader() {
                 imageVector = Icons.Outlined.History,
                 contentDescription = null,
                 modifier = Modifier.size(23.dp),
-                tint = Color(0xFFA7B7FF)
+                tint = LensBlue
             )
         }
 
@@ -892,14 +895,14 @@ private fun TimelineHeader() {
 
             Text(
                 text = "Timeline",
-                color = DeviceText,
+                color = LensTextPrimary,
                 fontSize = 19.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
                 text = "Recent app sessions",
-                color = DeviceTextSecondary,
+                color = LensTextSecondary,
                 fontSize = 13.sp
             )
         }
@@ -943,7 +946,7 @@ private fun TimelineSessionItem(
                         .fillMaxHeight()
                         .align(Alignment.TopCenter)
                         .background(
-                            Color(0xFF344040)
+                            LensTrack
                         )
                 )
             }
@@ -955,9 +958,9 @@ private fun TimelineSessionItem(
                     .clip(CircleShape)
                     .background(
                         if (isFirst) {
-                            DeviceCyan
+                            LensCyan
                         } else {
-                            Color(0xFF68718F)
+                            LensPurple
                         }
                     )
             )
@@ -975,10 +978,10 @@ private fun TimelineSessionItem(
             modifier = Modifier
                 .weight(1f)
                 .clip(RoundedCornerShape(14.dp))
-                .background(DeviceCardLight)
+                .background(LensSurfaceAlt)
                 .border(
                     width = 1.dp,
-                    color = DeviceBorder,
+                    color = LensBorder,
                     shape = RoundedCornerShape(14.dp)
                 )
                 .padding(
@@ -1001,7 +1004,7 @@ private fun TimelineSessionItem(
                             startMillis,
                             endMillis
                         ),
-                        color = DeviceText,
+                        color = LensTextPrimary,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -1012,7 +1015,7 @@ private fun TimelineSessionItem(
 
                     Text(
                         text = "Session duration",
-                        color = DeviceTextSecondary,
+                        color = LensTextSecondary,
                         fontSize = 12.sp
                     )
                 }
@@ -1022,9 +1025,9 @@ private fun TimelineSessionItem(
                         durationMillis
                     ),
                     color = if (isFirst) {
-                        DeviceCyan
+                        LensCyan
                     } else {
-                        DeviceBlue
+                        LensBlue
                     },
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -1047,10 +1050,10 @@ private fun EmptyTimelineCard() {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(DeviceCardLight)
+            .background(LensSurfaceAlt)
             .border(
                 width = 1.dp,
-                color = DeviceBorder,
+                color = LensBorder,
                 shape = RoundedCornerShape(16.dp)
             )
             .padding(24.dp),
@@ -1065,7 +1068,7 @@ private fun EmptyTimelineCard() {
                 imageVector = Icons.Outlined.History,
                 contentDescription = null,
                 modifier = Modifier.size(30.dp),
-                tint = DeviceTextMuted
+                tint = LensTextMuted
             )
 
             Spacer(
@@ -1074,7 +1077,7 @@ private fun EmptyTimelineCard() {
 
             Text(
                 text = "No sessions found",
-                color = DeviceText,
+                color = LensTextPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -1085,7 +1088,7 @@ private fun EmptyTimelineCard() {
 
             Text(
                 text = "There is no session timeline for this period.",
-                color = DeviceTextMuted,
+                color = LensTextMuted,
                 fontSize = 12.sp
             )
         }

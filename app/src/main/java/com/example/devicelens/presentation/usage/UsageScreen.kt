@@ -63,7 +63,29 @@ import com.example.devicelens.core.util.TimeFormatter
 import com.example.devicelens.domain.model.AppUsageInfo
 import com.example.devicelens.domain.model.UsagePeriod
 import com.example.devicelens.domain.model.UsageSortOption
-import com.example.devicelens.presentation.device.DeviceInfoTopBar
+import com.example.devicelens.presentation.components.LensBackBar
+import com.example.devicelens.ui.theme.LensAmber
+import com.example.devicelens.ui.theme.LensBackground
+import com.example.devicelens.ui.theme.LensBlue
+import com.example.devicelens.ui.theme.LensBlueDeep
+import com.example.devicelens.ui.theme.LensBorder
+import com.example.devicelens.ui.theme.LensCoral
+import com.example.devicelens.ui.theme.LensCyan
+import com.example.devicelens.ui.theme.LensCyanDark
+import com.example.devicelens.ui.theme.LensDangerBg
+import com.example.devicelens.ui.theme.LensDangerBorder
+import com.example.devicelens.ui.theme.LensDivider
+import com.example.devicelens.ui.theme.LensDot
+import com.example.devicelens.ui.theme.LensInsightBg
+import com.example.devicelens.ui.theme.LensInsightBorder
+import com.example.devicelens.ui.theme.LensPurple
+import com.example.devicelens.ui.theme.LensSurface
+import com.example.devicelens.ui.theme.LensSurfaceAlt
+import com.example.devicelens.ui.theme.LensTextMuted
+import com.example.devicelens.ui.theme.LensTextPrimary
+import com.example.devicelens.ui.theme.LensTextSecondary
+import com.example.devicelens.ui.theme.LensTrack
+import com.example.devicelens.ui.theme.LensType
 import com.example.devicelens.presentation.usage.components.periodLabel
 import java.util.Locale
 
@@ -72,33 +94,6 @@ import java.util.Locale
 // COLORS
 // ================================================================
 
-private val OuterBackground = Color(0xFF202224)
-
-private val PanelBackground = Color(0xFF0D1110)
-
-private val CardBackground = Color(0xFF191E1D)
-
-private val CardBackground2 = Color(0xFF1D2322)
-
-private val BorderColor = Color(0xFF303635)
-
-private val DividerColor = Color(0xFF252B2A)
-
-private val PrimaryText = Color(0xFFE1E6E4)
-
-private val SecondaryText = Color(0xFFB5BFBC)
-
-private val MutedText = Color(0xFF7D8784)
-
-private val Cyan = Color(0xFF69D8D4)
-
-private val CyanDark = Color(0xFF008F8C)
-
-private val Blue = Color(0xFF9DAEFF)
-
-private val InsightBackground = Color(0xFF141E32)
-
-private val InsightBorder = Color(0xFF31466D)
 
 
 // ================================================================
@@ -183,7 +178,7 @@ private fun UsageContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(OuterBackground)
+            .background(LensBackground)
     ) {
 
         // --------------------------------------------------------
@@ -196,10 +191,10 @@ private fun UsageContent(
                 .clip(
                     RoundedCornerShape(14.dp)
                 )
-                .background(PanelBackground)
+                .background(LensBackground)
                 .border(
                     width = 1.dp,
-                    color = BorderColor,
+                    color = LensBorder,
                     shape = RoundedCornerShape(14.dp)
                 ),
             contentAlignment = Alignment.BottomCenter
@@ -221,10 +216,6 @@ private fun UsageContent(
                 // ------------------------------------------------
                 // DEVICE LENS HEADER
                 // ------------------------------------------------
-
-                item {
-                    DeviceInfoTopBar("App Usage") { onBack()}
-                }
 
                 // ------------------------------------------------
                 // TOTAL SCREEN TIME
@@ -343,7 +334,7 @@ private fun UsageDottedBackground() {
             while (y < size.height) {
 
                 drawCircle(
-                    color = Color(0xFF777B7C).copy(alpha = 0.42f),
+                    color = LensDot.copy(alpha = 0.42f),
                     radius = radius,
                     center = Offset(x, y)
                 )
@@ -377,7 +368,7 @@ private fun DeviceLensHeader(
         Icon(
             imageVector = Icons.Outlined.Apps,
             contentDescription = null,
-            tint = Cyan,
+            tint = LensCyan,
             modifier = Modifier.size(25.dp)
         )
 
@@ -387,7 +378,7 @@ private fun DeviceLensHeader(
 
         Text(
             text = "DeviceLens",
-            color = Cyan,
+            color = LensCyan,
             fontSize = 27.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f)
@@ -397,7 +388,7 @@ private fun DeviceLensHeader(
 
             CircularProgressIndicator(
                 modifier = Modifier.size(22.dp),
-                color = Cyan,
+                color = LensCyan,
                 strokeWidth = 2.dp
             )
 
@@ -406,7 +397,7 @@ private fun DeviceLensHeader(
             Icon(
                 imageVector = Icons.Outlined.Settings,
                 contentDescription = "Settings",
-                tint = Cyan,
+                tint = LensCyan,
                 modifier = Modifier.size(27.dp)
             )
         }
@@ -433,7 +424,7 @@ private fun UsageTitle(
 
             Text(
                 text = "App Usage",
-                color = PrimaryText,
+                color = LensTextPrimary,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
@@ -442,7 +433,7 @@ private fun UsageTitle(
             Icon(
                 imageVector = Icons.Outlined.Refresh,
                 contentDescription = "Refresh",
-                tint = SecondaryText,
+                tint = LensTextSecondary,
                 modifier = Modifier
                     .size(24.dp)
                     .clickable{
@@ -457,7 +448,7 @@ private fun UsageTitle(
 
         Text(
             text = "Understand how you spend time on your apps",
-            color = SecondaryText,
+            color = LensTextSecondary,
             fontSize = 14.sp
         )
     }
@@ -478,10 +469,10 @@ private fun TotalScreenTimeCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(CardBackground)
+            .background(LensSurface)
             .border(
                 width = 1.dp,
-                color = DividerColor,
+                color = LensDivider,
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(
@@ -499,7 +490,7 @@ private fun TotalScreenTimeCard(
                     .size(48.dp)
                     .clip(CircleShape)
                     .background(
-                        Color(0xFF28459C)
+                        LensBlueDeep
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -507,7 +498,7 @@ private fun TotalScreenTimeCard(
                 Icon(
                     imageVector = Icons.Outlined.AccessTime,
                     contentDescription = null,
-                    tint = Color(0xFFAFC0FF),
+                    tint = LensPurple,
                     modifier = Modifier.size(25.dp)
                 )
             }
@@ -520,7 +511,7 @@ private fun TotalScreenTimeCard(
 
                 Text(
                     text = "TOTAL SCREEN TIME",
-                    color = SecondaryText,
+                    color = LensTextSecondary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace,
@@ -535,7 +526,7 @@ private fun TotalScreenTimeCard(
                     text = TimeFormatter.formatDuration(
                         totalUsageMillis
                     ),
-                    color = PrimaryText,
+                    color = LensTextPrimary,
                     fontSize = 29.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -548,7 +539,7 @@ private fun TotalScreenTimeCard(
 
         Text(
             text = "Usage for ${periodLabel(period)}",
-            color = SecondaryText,
+            color = LensTextSecondary,
             fontSize = 14.sp
         )
     }
@@ -583,17 +574,17 @@ private fun PeriodSelector(
                     )
                     .background(
                         if (isSelected) {
-                            CyanDark
+                            LensCyanDark
                         } else {
-                            CardBackground2
+                            LensSurfaceAlt
                         }
                     )
                     .border(
                         width = 1.dp,
                         color = if (isSelected) {
-                            CyanDark
+                            LensCyanDark
                         } else {
-                            BorderColor
+                            LensBorder
                         },
                         shape = RoundedCornerShape(11.dp)
                     )
@@ -608,7 +599,7 @@ private fun PeriodSelector(
                     color = if (isSelected) {
                         Color.White
                     } else {
-                        PrimaryText
+                        LensTextPrimary
                     },
                     fontSize = 13.sp,
                     fontWeight = if (isSelected) {
@@ -636,10 +627,10 @@ private fun UsageInsightCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(11.dp))
-            .background(InsightBackground)
+            .background(LensInsightBg)
             .border(
                 width = 1.dp,
-                color = InsightBorder,
+                color = LensInsightBorder,
                 shape = RoundedCornerShape(11.dp)
             )
             .padding(18.dp),
@@ -649,7 +640,7 @@ private fun UsageInsightCard(
         Icon(
             imageVector = Icons.Outlined.TipsAndUpdates,
             contentDescription = null,
-            tint = Blue,
+            tint = LensBlue,
             modifier = Modifier.size(22.dp)
         )
 
@@ -663,7 +654,7 @@ private fun UsageInsightCard(
 
             Text(
                 text = "Usage insight",
-                color = PrimaryText,
+                color = LensTextPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -678,7 +669,7 @@ private fun UsageInsightCard(
 
                     Text(
                         text = recommendation,
-                        color = SecondaryText,
+                        color = LensTextSecondary,
                         fontSize = 14.sp,
                         lineHeight = 20.sp
                     )
@@ -707,7 +698,7 @@ private fun SearchApps(
         placeholder = {
             Text(
                 text = "Search apps",
-                color = MutedText
+                color = LensTextMuted
             )
         },
         leadingIcon = {
@@ -715,7 +706,7 @@ private fun SearchApps(
             Icon(
                 imageVector = Icons.Outlined.Search,
                 contentDescription = null,
-                tint = SecondaryText
+                tint = LensTextSecondary
             )
         }
     )
@@ -744,7 +735,7 @@ private fun ApplicationsHeader(
 
             Text(
                 text = "Applications",
-                color = PrimaryText,
+                color = LensTextPrimary,
                 fontSize = 21.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -755,7 +746,7 @@ private fun ApplicationsHeader(
 
             Text(
                 text = "$count apps",
-                color = SecondaryText,
+                color = LensTextSecondary,
                 fontSize = 12.sp,
                 fontFamily = FontFamily.Monospace
             )
@@ -792,7 +783,7 @@ private fun SortMenu(
                 UsageSortOption.NAME_AZ -> "Name A–Z"
                 UsageSortOption.NAME_ZA -> "Name Z–A"
             },
-            color = Cyan,
+            color = LensCyan,
             fontSize = 13.sp,
             modifier = Modifier
                 .clickable {
@@ -867,9 +858,9 @@ private fun NewAppUsageCard(
             .border(
                 width = 1.dp,
                 color = if (highlighted) {
-                    Color(0xFF613036)
+                    LensDangerBorder
                 } else {
-                    Color(0xFF222827)
+                    LensSurfaceAlt
                 },
                 shape = RoundedCornerShape(11.dp)
             )
@@ -905,7 +896,7 @@ private fun NewAppUsageCard(
 
                 Text(
                     text = app.appName,
-                    color = PrimaryText,
+                    color = LensTextPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
@@ -918,7 +909,7 @@ private fun NewAppUsageCard(
 
                 Text(
                     text = app.packageName,
-                    color = SecondaryText,
+                    color = LensTextSecondary,
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace,
                     maxLines = 1,
@@ -938,7 +929,7 @@ private fun NewAppUsageCard(
                     text = TimeFormatter.formatDuration(
                         app.usageMillis
                     ),
-                    color = PrimaryText,
+                    color = LensTextPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -949,7 +940,7 @@ private fun NewAppUsageCard(
 
                 Text(
                     text = "${app.percentOfTotal.toInt()}%",
-                    color = SecondaryText,
+                    color = LensTextSecondary,
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace
                 )
@@ -984,7 +975,7 @@ private fun NewAppUsageCard(
             Icon(
                 imageVector = Icons.Outlined.AccessTime,
                 contentDescription = null,
-                tint = SecondaryText,
+                tint = LensTextSecondary,
                 modifier = Modifier.size(15.dp)
             )
 
@@ -994,7 +985,7 @@ private fun NewAppUsageCard(
 
             Text(
                 text = "Last used ${formatLastUsed(app)}",
-                color = SecondaryText,
+                color = LensTextSecondary,
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace,
                 modifier = Modifier.weight(1f),
@@ -1005,7 +996,7 @@ private fun NewAppUsageCard(
             Icon(
                 imageVector = Icons.Outlined.BarChart,
                 contentDescription = null,
-                tint = SecondaryText,
+                tint = LensTextSecondary,
                 modifier = Modifier.size(15.dp)
             )
 
@@ -1015,7 +1006,7 @@ private fun NewAppUsageCard(
 
             Text(
                 text = "${app.launchCount} launches",
-                color = SecondaryText,
+                color = LensTextSecondary,
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             )
@@ -1079,7 +1070,7 @@ private fun UsageProgressBar(
             .height(7.dp)
             .clip(CircleShape)
             .background(
-                Color(0xFF292F2E)
+                LensTrack
             )
     ) {
 
@@ -1090,9 +1081,9 @@ private fun UsageProgressBar(
                 .clip(CircleShape)
                 .background(
                     if (percent >= 50) {
-                        Color(0xFFFFA7A7)
+                        LensCoral
                     } else {
-                        Cyan
+                        LensCyan
                     }
                 )
         )
@@ -1112,13 +1103,13 @@ private fun appCardColor(
     return when {
 
         highlighted ->
-            Color(0xFF300E13)
+            LensDangerBg
 
         app.percentOfTotal >= 10 ->
-            Color(0xFF211214)
+            LensDangerBg
 
         else ->
-            CardBackground
+            LensSurface
     }
 }
 
@@ -1130,13 +1121,13 @@ private fun appIconColor(
     return when {
 
         app.percentOfTotal >= 50 ->
-            Color(0xFFFFE000)
+            LensAmber
 
         app.percentOfTotal >= 10 ->
-            Color(0xFF5B98FF)
+            LensBlue
 
         else ->
-            Cyan
+            LensCyan
     }
 }
 
@@ -1179,7 +1170,7 @@ private fun EmptyAppsCard() {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(11.dp))
-            .background(CardBackground)
+            .background(LensSurface)
             .padding(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -1187,7 +1178,7 @@ private fun EmptyAppsCard() {
         Icon(
             imageVector = Icons.Outlined.Apps,
             contentDescription = null,
-            tint = MutedText,
+            tint = LensTextMuted,
             modifier = Modifier.size(32.dp)
         )
 
@@ -1197,7 +1188,7 @@ private fun EmptyAppsCard() {
 
         Text(
             text = "No applications found",
-            color = PrimaryText,
+            color = LensTextPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -1208,7 +1199,7 @@ private fun EmptyAppsCard() {
 
         Text(
             text = "Try another period or search query.",
-            color = SecondaryText,
+            color = LensTextSecondary,
             fontSize = 13.sp
         )
     }
@@ -1227,11 +1218,11 @@ private fun UsageBottomNavigation() {
             .fillMaxWidth()
 
             .background(
-                PanelBackground
+                LensBackground
             )
             .border(
                 width = 1.dp,
-                color = BorderColor
+                color = LensBorder
             )
             .padding(
                 horizontal = 8.dp,
@@ -1287,7 +1278,7 @@ private fun BottomNavigationItem(
             .clip(RoundedCornerShape(25.dp))
             .background(
                 if (selected) {
-                    Color(0xFF009B98)
+                    LensCyanDark
                 } else {
                     Color.Transparent
                 }
@@ -1305,7 +1296,7 @@ private fun BottomNavigationItem(
             tint = if (selected) {
                 Color.White
             } else {
-                SecondaryText
+                LensTextSecondary
             },
             modifier = Modifier.size(21.dp)
         )
@@ -1319,7 +1310,7 @@ private fun BottomNavigationItem(
             color = if (selected) {
                 Color.White
             } else {
-                SecondaryText
+                LensTextSecondary
             },
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold,
@@ -1339,7 +1330,7 @@ private fun UsageLoading() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(OuterBackground),
+            .background(LensBackground),
         contentAlignment = Alignment.Center
     ) {
 
@@ -1348,7 +1339,7 @@ private fun UsageLoading() {
         ) {
 
             CircularProgressIndicator(
-                color = Cyan
+                color = LensCyan
             )
 
             Spacer(
@@ -1357,7 +1348,7 @@ private fun UsageLoading() {
 
             Text(
                 text = "Reading app usage...",
-                color = SecondaryText,
+                color = LensTextSecondary,
                 fontSize = 14.sp
             )
         }
@@ -1378,7 +1369,7 @@ private fun UsageError(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(OuterBackground)
+            .background(LensBackground)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -1389,7 +1380,7 @@ private fun UsageError(
 
             Text(
                 text = "Unable to load usage",
-                color = PrimaryText,
+                color = LensTextPrimary,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -1400,7 +1391,7 @@ private fun UsageError(
 
             Text(
                 text = message,
-                color = SecondaryText,
+                color = LensTextSecondary,
                 fontSize = 14.sp
             )
 
@@ -1411,7 +1402,7 @@ private fun UsageError(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(10.dp))
-                    .background(CyanDark)
+                    .background(LensCyanDark)
                     .clickable {
                         onRetry()
                     }
