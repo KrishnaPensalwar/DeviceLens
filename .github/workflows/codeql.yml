@@ -1,0 +1,62 @@
+name: "CodeQL Advanced"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "16 18 * * 4"
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: java-kotlin
+            build-mode: manual
+
+    steps:
+      # Checkout source code
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # Set up Java for Android/Gradle
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Make Gradle wrapper executable
+      - name: Grant execute permission to Gradle
+        run: chmod +x ./gradlew
+
+      # Initialize CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      # Build the Android/Kotlin project
+      - name: Build project
+        if: matrix.build-mode == 'manual'
+        run: ./gradlew build --no-daemon
+
+      # Run CodeQL analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
